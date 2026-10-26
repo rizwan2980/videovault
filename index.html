@@ -18,6 +18,13 @@
   .sideAdR { right:12px; }
   @media (min-width:1760px) { .sideAd { display:block; } }
   .card.deepHi { outline:3px solid var(--gold); outline-offset:3px; }
+  .post { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; margin:0 0 16px; }
+  .post .pdate { color:var(--mut); font-size:.8rem; margin-bottom:4px; }
+  .post h3 { margin:0 0 8px; font-size:1.15rem; }
+  .post .ptext { white-space:pre-wrap; color:#d8d4c8; line-height:1.55; margin:0; }
+  .post .pimgs { display:grid; gap:10px; margin-top:12px; }
+  .post .pimgs img { width:100%; border-radius:12px; display:block; }
+  .post.deepHi { outline:3px solid var(--gold); outline-offset:3px; }
   .adslot:empty { display:none; }
   .adMob { display:block; }
   .adPc { display:none; }
@@ -192,6 +199,11 @@
   </section>
 
   
+
+  <section class="sect" id="postsSect" hidden>
+    <div class="sectHead"><h2>📰 Posts</h2><span>— news &amp; updates from the owner</span></div>
+    <div id="postList"></div>
+  </section>
 
   <!-- AD SLOT (bottom): Adsterra banner/native code will be pasted inside #adBottom -->
   <div class="adslot" id="adBottom">
@@ -453,6 +465,53 @@ fetch("library.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).t
   applyDeepLink();
 }).catch(() => {});
 setTimeout(applyDeepLink, 900);
+
+/* ---------- Posts (shared, from posts.json) ---------- */
+const DEEP_POST = (() => { try { return new URLSearchParams(location.search).get("p"); } catch(e) { return null; } })();
+function postLink(p){ return location.href.split(/[?#]/)[0] + "?p=" + encodeURIComponent(p.id); }
+let postsDone = false;
+function applyDeepPost(){
+  if (postsDone || !DEEP_POST) return;
+  const el = document.getElementById("post-" + DEEP_POST);
+  if (!el) return;
+  postsDone = true;
+  setTimeout(() => { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("deepHi"); }, 400);
+}
+function renderPosts(list){
+  const sec = document.getElementById("postsSect"), box = document.getElementById("postList");
+  if (!sec || !box || !list.length) return;
+  sec.hidden = false;
+  list.forEach(p => {
+    const art = document.createElement("article"); art.className = "post"; art.id = "post-" + p.id;
+    if (p.date) { const d = document.createElement("div"); d.className = "pdate"; d.textContent = p.date; art.appendChild(d); }
+    if (p.title) { const h = document.createElement("h3"); h.textContent = p.title; art.appendChild(h); }
+    if (p.text) { const t = document.createElement("p"); t.className = "ptext"; t.textContent = p.text; art.appendChild(t); }
+    if (Array.isArray(p.images) && p.images.length) {
+      const ig = document.createElement("div"); ig.className = "pimgs";
+      p.images.forEach(src => { const im = document.createElement("img"); im.src = src; im.loading = "lazy"; im.referrerPolicy = "no-referrer"; im.alt = ""; ig.appendChild(im); });
+      art.appendChild(ig);
+    }
+    const row = document.createElement("div"); row.className = "rowBtns"; row.style.marginTop = "12px";
+    if (p.videoId) {
+      const b = document.createElement("button"); b.className = "btn small gold"; b.textContent = "▶ Watch the video";
+      b.onclick = () => {
+        const v = sharedItems.find(x => x.id === p.videoId);
+        if (v && v.kind !== "linkout") playHere(v);
+        else location.href = location.href.split(/[?#]/)[0] + "?v=" + encodeURIComponent(p.videoId);
+      };
+      row.appendChild(b);
+    }
+    const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy post link";
+    cb.onclick = () => { if (navigator.clipboard) navigator.clipboard.writeText(postLink(p)); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
+    const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
+    sh.onclick = () => { window.open("https://wa.me/?text=" + encodeURIComponent((p.title || "VideoVault post") + " — " + postLink(p)), "_blank", "noopener"); };
+    row.appendChild(cb); row.appendChild(sh);
+    art.appendChild(row);
+    box.appendChild(art);
+  });
+  applyDeepPost();
+}
+fetch("posts.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => { if (Array.isArray(j)) renderPosts(j); }).catch(() => {});
 </script>
 
 

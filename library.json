@@ -11,6 +11,39 @@
   "note": "The full movie with Hindi dubbing — the button opens it on Bilibili, where it plays."
  },
  {
+  "id": "s19",
+  "title": "COLONY (2026) — Korean Zombie Movie | Hindi Dubbed (Full Movie)",
+  "poster": "https://i.ytimg.com/vi/xWlmw1pQn5M/hqdefault.jpg",
+  "cat": "Movies",
+  "platform": "YouTube",
+  "kind": "embed",
+  "embed": "https://www.youtube.com/embed/xWlmw1pQn5M?rel=0",
+  "url": "https://www.youtube.com/watch?v=xWlmw1pQn5M",
+  "note": "Full movie in Hindi. A deadly zombie outbreak begins — Korean horror thriller, plays right here."
+ },
+ {
+  "id": "s20",
+  "title": "Captain (2026) — Sci-Fi Monster Movie | Hindi Dubbed (Full Movie)",
+  "poster": "https://i.ytimg.com/vi/E6uwWCrlJow/hqdefault.jpg",
+  "cat": "Movies",
+  "platform": "YouTube",
+  "kind": "embed",
+  "embed": "https://www.youtube.com/embed/E6uwWCrlJow?rel=0",
+  "url": "https://www.youtube.com/watch?v=E6uwWCrlJow",
+  "note": "Full movie in Hindi. A military unit faces blind alien monsters, plays right here."
+ },
+ {
+  "id": "s44",
+  "title": "The Serpent Goddess (2026) — English (Full Movie)",
+  "poster": "https://i.ytimg.com/vi/lo39dLycm6s/hqdefault.jpg",
+  "cat": "Movies",
+  "platform": "YouTube",
+  "kind": "embed",
+  "embed": "https://www.youtube.com/embed/lo39dLycm6s?rel=0",
+  "url": "https://www.youtube.com/watch?v=lo39dLycm6s",
+  "note": "New 2026 full movie in English. A serpent-descended girl faces a colossal mythical snake, plays right here."
+ },
+ {
   "id": "s13",
   "title": "The Killer Sandworms — Hindi Dubbed (Full Movie)",
   "poster": "https://i.ytimg.com/vi/Sh8xX2ZSHVw/hqdefault.jpg",
@@ -75,28 +108,6 @@
   "embed": "https://www.youtube.com/embed/Tzy4Ba0gNBs?rel=0",
   "url": "https://www.youtube.com/watch?v=Tzy4Ba0gNBs",
   "note": "A giant python terrorises an island — the full movie explained in Hindi/Urdu."
- },
- {
-  "id": "s19",
-  "title": "COLONY (2026) — Korean Zombie Movie | Hindi Dubbed (Full Movie)",
-  "poster": "https://i.ytimg.com/vi/xWlmw1pQn5M/hqdefault.jpg",
-  "cat": "Movies",
-  "platform": "YouTube",
-  "kind": "embed",
-  "embed": "https://www.youtube.com/embed/xWlmw1pQn5M?rel=0",
-  "url": "https://www.youtube.com/watch?v=xWlmw1pQn5M",
-  "note": "Full movie in Hindi. A deadly zombie outbreak begins — Korean horror thriller, plays right here."
- },
- {
-  "id": "s20",
-  "title": "Captain (2026) — Sci-Fi Monster Movie | Hindi Dubbed (Full Movie)",
-  "poster": "https://i.ytimg.com/vi/E6uwWCrlJow/hqdefault.jpg",
-  "cat": "Movies",
-  "platform": "YouTube",
-  "kind": "embed",
-  "embed": "https://www.youtube.com/embed/E6uwWCrlJow?rel=0",
-  "url": "https://www.youtube.com/watch?v=E6uwWCrlJow",
-  "note": "Full movie in Hindi. A military unit faces blind alien monsters, plays right here."
  },
  {
   "id": "s21",
@@ -350,16 +361,5 @@
   "embed": "https://www.youtube.com/embed/cyycJrE6SBA?rel=0",
   "url": "https://www.youtube.com/watch?v=cyycJrE6SBA",
   "note": "China's giant sci-fi epic: humanity moves the Earth itself — full recap and ending explained in English."
- },
- {
-  "id": "s44",
-  "title": "The Serpent Goddess (2026) — English (Full Movie)",
-  "poster": "https://i.ytimg.com/vi/lo39dLycm6s/hqdefault.jpg",
-  "cat": "Movies",
-  "platform": "YouTube",
-  "kind": "embed",
-  "embed": "https://www.youtube.com/embed/lo39dLycm6s?rel=0",
-  "url": "https://www.youtube.com/watch?v=lo39dLycm6s",
-  "note": "New 2026 full movie in English. A serpent-descended girl faces a colossal mythical snake, plays right here."
  }
 ]

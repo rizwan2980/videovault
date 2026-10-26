@@ -1,10 +1,1 @@
-[
-  {
-    "id": "ptest",
-    "date": "2026-10-26",
-    "title": "TEST POST - checking the post page, will be removed",
-    "text": "This is a temporary test post. It only checks that a post opens on its own full page with the side ads running. It will be deleted right after the check - the owner will send the real post.",
-    "images": ["https://i0.hdslb.com/bfs/archive/32902e1e9094a123b41210969c4d6a97067b0501.jpg"],
-    "videoId": "s11"
-  }
-]
+[]

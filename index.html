@@ -415,7 +415,7 @@ function render(){
   renderStats(); renderCats();
   fillGrid("gridShared", "emptyShared", applySort(sharedItems.filter(matches)), true);
   fillGrid("gridMine", "emptyMine", applySort(mine.filter(matches)), false);
-  document.getElementById("mineSect").style.display = (!IS_OWNER && mine.length === 0) ? "none" : "";
+  document.getElementById("mineSect").style.display = IS_OWNER ? "" : "none";
   const ft = document.getElementById("favToggle");
   ft.className = favOnly ? "" : "ghost"; ft.textContent = favOnly ? "★ Favourites" : "☆ Favourites";
 }
@@ -574,21 +574,44 @@ document.addEventListener("paste", e => {
 <script>
 (function(){try{var b=document.getElementById('vvCookie');if(!localStorage.getItem('vv_cookies_ok'))b.style.display='flex';window.vvAcceptCookies=function(){try{localStorage.setItem('vv_cookies_ok','1');}catch(e){}b.style.display='none';};}catch(e){}})();
 </script>
+<div id="vvCodeModal" style="display:none;position:fixed;inset:0;background:rgba(4,4,10,.72);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#151528;border:1px solid var(--gold);border-radius:16px;padding:22px;width:min(92vw,360px);text-align:center">
+    <div style="font-size:20px;font-weight:800;margin-bottom:6px">🔐 Owner access</div>
+    <p style="color:var(--mut);font-size:14px;margin-bottom:12px">Enter the owner code to show the Add system on this device.</p>
+    <input id="vvCodeIn" type="password" placeholder="Owner code" style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0e0e1c;color:var(--txt);font-size:16px;margin-bottom:8px">
+    <div id="vvCodeErr" style="color:#ff8080;font-size:13.5px;min-height:18px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button id="vvCodeGo" style="background:linear-gradient(180deg,var(--gold2),var(--gold));border:0;color:#221a02;font-weight:700;padding:10px 20px;border-radius:10px;cursor:pointer">Unlock</button>
+      <button id="vvCodeCancel" class="ghost">Cancel</button>
+    </div>
+  </div>
+</div>
 <script>
 (function(){
+  var modal = document.getElementById('vvCodeModal');
+  var input = document.getElementById('vvCodeIn');
+  var err = document.getElementById('vvCodeErr');
+  function showModal(){ err.textContent = ''; input.value = ''; modal.style.display = 'flex'; setTimeout(function(){ try { input.focus(); } catch (e) {} }, 50); }
+  function hideModal(){ modal.style.display = 'none'; }
+  function tryUnlock(){
+    if (input.value.trim() === 'rizwan786') { try { localStorage.setItem('vv_owner', '1'); } catch (e) {} location.reload(); }
+    else err.textContent = 'Wrong code — try again.';
+  }
   var link = document.getElementById('vvOwnerLink');
   if (link) link.onclick = function(e){
     e.preventDefault();
-    try { if (IS_OWNER) { alert('Owner mode is already ON in this browser.'); return; } } catch (err) {}
-    var code = prompt('Owner code:');
-    if (code === null) return;
-    if (code.trim() === 'rizwan786') { try { localStorage.setItem('vv_owner', '1'); } catch (err) {} location.reload(); }
-    else alert('Wrong code.');
+    var owner = false; try { owner = IS_OWNER; } catch (err2) {}
+    if (owner) { var p = document.getElementById('addPanel'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    showModal();
   };
+  document.getElementById('vvCodeGo').onclick = tryUnlock;
+  document.getElementById('vvCodeCancel').onclick = hideModal;
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') tryUnlock(); });
+  modal.addEventListener('click', function(e){ if (e.target === modal) hideModal(); });
   var lb = document.getElementById('lockBtn');
   if (lb) {
-    try { if (LOCAL_BUILD) { var lr = document.getElementById('lockRow'); if (lr) lr.style.display = 'none'; } } catch (err) {}
-    lb.onclick = function(){ try { localStorage.removeItem('vv_owner'); } catch (err) {} location.reload(); };
+    try { if (LOCAL_BUILD) { var lr = document.getElementById('lockRow'); if (lr) lr.style.display = 'none'; } } catch (err3) {}
+    lb.onclick = function(){ try { localStorage.removeItem('vv_owner'); } catch (e) {} location.reload(); };
   }
 })();
 </script>

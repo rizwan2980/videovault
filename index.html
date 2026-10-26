@@ -86,7 +86,7 @@
       <button id="addBtn">Add to Library</button>
     </div>
     <div id="checkResult"></div>
-    <p class="note">How it works: the link becomes a card with a picture, title and site badge. THE ORDER (owner's choice): if a video CAN play inside this website, clicking its card plays it HERE first. Only when a site offers no in-site player does clicking open the video on its own website instead — and the card says so before you click. For YouTube the picture + title come automatically. For other sites the picture comes automatically only if the site shares one; otherwise the card shows a styled poster with the title, and you can paste any poster image link to make it exact. Sites with an in-site player (YouTube, Vimeo, Drive, bilibili.com, direct .mp4...) carry the big gold ▶ Play here button. Watch opens the original site WITHOUT telling it where the click came from (no-referrer), because a few strict sites (e.g. Bilibili, guarded by Akamai) sometimes block visits that arrive from inside other apps — if one still shows an error page, copy its link (⧉ button) and paste it directly into Chrome.</p>
+    <p class="note">How it works: the link becomes a card with a picture, title and site badge. THE ORDER (owner's choice): if a video CAN play inside this website, clicking its card plays it HERE first. Only when a site offers no in-site player does clicking open the video on its own website instead — and the card says so before you click. Pictures + the real title now come automatically for YouTube, Vimeo, TikTok and Dailymotion — fetched from the site itself a second after you add the link. Instagram, Facebook and Bilibili keep their pictures locked away from other websites, so those cards show the title as their poster unless you paste a poster image link yourself. Sites with an in-site player (YouTube, Vimeo, Drive, bilibili.com, direct .mp4...) carry the big gold ▶ Play here button. Watch opens the original site WITHOUT telling it where the click came from (no-referrer), because a few strict sites (e.g. Bilibili, guarded by Akamai) sometimes block visits that arrive from inside other apps — if one still shows an error page, copy its link (⧉ button) and paste it directly into Chrome.</p>
     <div class="row" style="margin-top:10px;">
       <button class="ghost" id="exportBtn">⬇ Backup library (JSON)</button>
       <label class="ghost" style="padding:11px 18px; border-radius:10px; border:1px solid #3a3a58; background:#23233a; color:#eee; font-weight:600; cursor:pointer; font-size:15px;">⬆ Restore backup <input id="importIn" type="file" accept=".json,application/json" style="display:none;"></label>
@@ -161,12 +161,14 @@ document.getElementById("addBtn").onclick = () => {
   if (c.error) { cr.textContent = verdictText(c); alert(c.error); return; }
   if (items.some(x => x.url === c.url)) { cr.textContent = "⚠ This link is already in your library."; alert("This link is already in your library."); return; }
   const titleEl = document.getElementById("titleIn"), posterEl = document.getElementById("posterIn");
-  addItem({
+  const newItem = {
     title: titleEl.value.trim() || deriveTitle(c.url),
     poster: posterEl.value.trim() || c.poster || "",
     cat: document.getElementById("catIn").value,
     platform: c.platform, kind: c.kind, embed: c.embed || "", url: c.url, note: c.note || ""
-  });
+  };
+  addItem(newItem);
+  enrichItem(newItem, !!titleEl.value.trim(), !!posterEl.value.trim());
   cr.textContent = verdictText(c);
   linkEl.value = ""; titleEl.value = ""; posterEl.value = "";
 };
@@ -176,6 +178,24 @@ document.getElementById("linkIn").addEventListener("input", e => {
 });
 
 function openOriginal(v){ window.open(v.url, "_blank", "noopener,noreferrer"); }
+function oembedUrl(v){
+  const u = encodeURIComponent(v.url);
+  if (v.platform === "YouTube") return "https://www.youtube.com/oembed?url=" + u + "&format=json";
+  if (v.platform === "Vimeo") return "https://vimeo.com/api/oembed.json?url=" + u;
+  if (v.platform === "TikTok") return "https://www.tiktok.com/oembed?url=" + u;
+  if (v.platform === "Dailymotion") return "https://www.dailymotion.com/services/oembed?url=" + u;
+  return "";
+}
+function enrichItem(item, keepTitle, keepPoster){
+  const api = oembedUrl(item); if (!api) return;
+  fetch(api).then(r => r.ok ? r.json() : null).then(j => {
+    if (!j) return; let changed = false;
+    if (!keepPoster && j.thumbnail_url && item.poster !== j.thumbnail_url) { item.poster = j.thumbnail_url; changed = true; }
+    if (!keepTitle && j.title && item.title === deriveTitle(item.url) && item.title !== j.title) { item.title = j.title; changed = true; }
+    if (changed) { save(); render(); }
+  }).catch(() => {});
+}
+
 function playHere(v){
   const sec = document.getElementById("playerSection");
   const w = document.getElementById("playerWrap");
@@ -297,6 +317,7 @@ if (!items.length) {
   save();
 }
 render();
+items.filter(v => !v.poster && oembedUrl(v)).forEach((v, i) => setTimeout(() => enrichItem(v, false, false), 500 * (i + 1)));
 </script>
 </body>
 </html>

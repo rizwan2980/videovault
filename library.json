@@ -1,5 +1,16 @@
 [
  {
+  "id": "s12",
+  "title": "HOPE (2026) — Korean Movie | Hindi Dubbed (Full Movie)",
+  "poster": "https://i0.hdslb.com/bfs/archive/32902e1e9094a123b41210969c4d6a97067b0501.jpg",
+  "cat": "Movies",
+  "platform": "Bilibili TV",
+  "kind": "linkout",
+  "embed": "",
+  "url": "https://www.bilibili.tv/en/video/4801384054266880",
+  "note": "The full movie with Hindi dubbing — the button opens it on Bilibili, where it plays."
+ },
+ {
   "id": "s11",
   "title": "Watch 'Hope' in one go, Korea's latest 2026 sci-fi thriller blockbuster; Hwang Jung-min becomes a sheriff, and a man-eating monster suddenly appears in a small town! HZ",
   "poster": "https://i0.hdslb.com/bfs/archive/32902e1e9094a123b41210969c4d6a97067b0501.jpg",
@@ -8,116 +19,6 @@
   "kind": "embed",
   "embed": "https://player.bilibili.com/player.html?bvid=BV1pipm6YEPP&page=1&high_quality=1",
   "url": "https://www.bilibili.com/video/BV1pipm6YEPP",
-  "note": ""
- },
- {
-  "id": "s1",
-  "title": "Big Buck Bunny 60fps 4K - Official Blender Foundation Short Film",
-  "poster": "https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg",
-  "cat": "Fun",
-  "platform": "YouTube",
-  "kind": "embed",
-  "embed": "https://www.youtube.com/embed/aqz-KE-bpKQ?rel=0",
-  "url": "https://www.youtube.com/watch?v=aqz-KE-bpKQ",
-  "note": ""
- },
- {
-  "id": "s2",
-  "title": "Public information film from citizenAID - Response to a bombing",
-  "poster": "https://i.vimeocdn.com/video/630498358-c4642825188ab3fe91d6c702bf61effe6b1abd4a1ef053f9c480c63d31a04869-d_640?region=us",
-  "cat": "Learning",
-  "platform": "Vimeo",
-  "kind": "embed",
-  "embed": "https://player.vimeo.com/video/214090626",
-  "url": "https://vimeo.com/214090626",
-  "note": ""
- },
- {
-  "id": "s3",
-  "title": "¡PIKA! [The Itch]",
-  "poster": "https://i.vimeocdn.com/video/2216237496-e97ebc0849d8f2d426b49e390409812159342f542c6537975ed497e5311e755e-d_295x166?region=us",
-  "cat": "Movies",
-  "platform": "Vimeo",
-  "kind": "embed",
-  "embed": "https://player.vimeo.com/video/1238505828",
-  "url": "https://vimeo.com/1238505828",
-  "note": ""
- },
- {
-  "id": "s4",
-  "title": "TikTok video by @channel.734 (#greenscreen)",
-  "poster": "",
-  "cat": "Social",
-  "platform": "TikTok",
-  "kind": "embed",
-  "embed": "https://www.tiktok.com/embed/v2/7598270161560292638",
-  "url": "https://www.tiktok.com/@channel.734/video/7598270161560292638",
-  "note": ""
- },
- {
-  "id": "s5",
-  "title": "Instagram Reel — @saksham_nasa",
-  "poster": "",
-  "cat": "Social",
-  "platform": "Instagram",
-  "kind": "embed",
-  "embed": "https://www.instagram.com/reel/Dep0zzHThe2/embed",
-  "url": "https://www.instagram.com/reel/Dep0zzHThe2/",
-  "note": ""
- },
- {
-  "id": "s6",
-  "title": "Roman Launches and a New Era Begins (Official NASA Recap)",
-  "poster": "",
-  "cat": "News",
-  "platform": "Facebook",
-  "kind": "embed",
-  "embed": "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2FNASA%2Fvideos%2Froman-launches-and-a-new-era-begins-official-nasa-recap%2F916920438162629&show_text=false",
-  "url": "https://www.facebook.com/NASA/videos/roman-launches-and-a-new-era-begins-official-nasa-recap/916920438162629",
-  "note": ""
- },
- {
-  "id": "s7",
-  "title": "Best Fails of The Week — Funniest Fails Compilation",
-  "poster": "https://s1.dmcdn.net/v/ZHLG61gptMaVSYlZe/x720",
-  "cat": "Fun",
-  "platform": "Dailymotion",
-  "kind": "embed",
-  "embed": "https://www.dailymotion.com/embed/video/x9sb66e",
-  "url": "https://www.dailymotion.com/video/x9sb66e",
-  "note": "Dailymotion blocked this one's in-site play in the test region — if it does not play here, Watch opens it on Dailymotion."
- },
- {
-  "id": "s8",
-  "title": "Bilibili video — BV19wnQ6sExk",
-  "poster": "",
-  "cat": "Movies",
-  "platform": "Bilibili",
-  "kind": "embed",
-  "embed": "https://player.bilibili.com/player.html?bvid=BV19wnQ6sExk&page=1&high_quality=1",
-  "url": "https://www.bilibili.com/video/BV19wnQ6sExk",
-  "note": "Bilibili's own player refused this video in the test region; it may play in yours. Watch opens it on Bilibili."
- },
- {
-  "id": "s9",
-  "title": "Do Schools Kill Creativity? — Sir Ken Robinson (TED)",
-  "poster": "",
-  "cat": "Learning",
-  "platform": "Ted",
-  "kind": "linkout",
-  "embed": "",
-  "url": "https://www.ted.com/talks/sir_ken_robinson_do_schools_kill_creativity",
-  "note": "Link card — opens on the original website."
- },
- {
-  "id": "s10",
-  "title": "Flower — sample video file (plays inside this website)",
-  "poster": "",
-  "cat": "Fun",
-  "platform": "Video file",
-  "kind": "file",
-  "embed": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-  "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-  "note": ""
+  "note": "The whole story in one go — plays right here, inside VideoVault."
  }
 ]

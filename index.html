@@ -102,6 +102,8 @@
 const KEY = "videovault_linklib_v6";
 let items = [];
 try { items = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch(e) { items = []; }
+// One-time repair: the old sample-file host stopped serving; point any saved copy at the working sample.
+items.forEach(v => { if (v.url === "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4") { v.url = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"; v.embed = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"; } });
 if (!Array.isArray(items)) items = [];
 let activeCat = "All", query = "";
 
@@ -312,7 +314,7 @@ if (!items.length) {
     { id:"seed2", title:"Big Buck Bunny — YouTube sample (picture + title came automatically)", poster:"https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg", cat:"Fun",
       platform:"YouTube", kind:"embed", embed:"https://www.youtube.com/embed/aqz-KE-bpKQ?rel=0", url:"https://www.youtube.com/watch?v=aqz-KE-bpKQ", note:"", fav:false },
     { id:"seed3", title:"Sample video file — plays inside this website", poster:"", cat:"Fun",
-      platform:"Video file", kind:"file", embed:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", url:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", note:"", fav:false }
+      platform:"Video file", kind:"file", embed:"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", url:"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", note:"", fav:false }
   ];
   save();
 }

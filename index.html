@@ -12,6 +12,8 @@
     background: radial-gradient(1200px 600px at 80% -10%, #2b2350 0%, transparent 60%),
                 radial-gradient(900px 500px at -10% 20%, #3a2c12 0%, transparent 55%),
                 linear-gradient(180deg, #0b0b14, #101020 40%, #0b0b14); }
+  .adslot { max-width:1180px; margin:20px auto 0; text-align:center; }
+  .adslot:empty { display:none; }
   .wrap { max-width:1180px; margin:0 auto; padding:0 16px 60px; }
   header.hero { text-align:center; padding:44px 10px 8px; }
   .logo { font-size:52px; line-height:1; filter: drop-shadow(0 6px 18px rgba(212,175,55,.45)); }
@@ -94,6 +96,8 @@
     <p class="tag">Watch Link Library — paste any video link, get a premium card, and play it right here where the site allows.</p>
     <div class="chips" id="stats"></div>
   </header>
+  <!-- AD SLOT (top): Adsterra banner code will be pasted inside #adTop -->
+  <div class="adslot" id="adTop"></div>
 
   <div class="toolbar">
     <div class="row" style="margin-top:0;">
@@ -117,6 +121,9 @@
   </section>
 
   
+
+  <!-- AD SLOT (bottom): Adsterra banner/native code will be pasted inside #adBottom -->
+  <div class="adslot" id="adBottom"></div>
 
   <footer>
     <b>VideoVault</b> — every video stays on its own website and plays through that site's own player.<br>

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{if(localStorage.getItem('vv_owner')==='1')document.documentElement.classList.add('owner')}catch(e){}</script>
 <title>VideoVault — Watch Link Library</title>
 <meta name="description" content="VideoVault — one premium library for video links from every website. Play inside where the site allows, or open on the original website.">
 <style>
@@ -12,6 +13,7 @@
     background: radial-gradient(1200px 600px at 80% -10%, #2b2350 0%, transparent 60%),
                 radial-gradient(900px 500px at -10% 20%, #3a2c12 0%, transparent 55%),
                 linear-gradient(180deg, #0b0b14, #101020 40%, #0b0b14); }
+  html:not(.owner) .ownerOnly { display:none !important; }
   .wrap { max-width:1180px; margin:0 auto; padding:0 16px 60px; }
   header.hero { text-align:center; padding:44px 10px 8px; }
   .logo { font-size:52px; line-height:1; filter: drop-shadow(0 6px 18px rgba(212,175,55,.45)); }
@@ -108,7 +110,7 @@
     <div class="cats" id="cats"></div>
   </div>
 
-  <section class="panel">
+  <section class="panel ownerOnly" id="addPanel">
     <h2>＋ Add a video link — from ANY website</h2>
     <p class="note">THE ORDER: if a video CAN play inside VideoVault, clicking its card plays it HERE first, in the cinema player. Only when a site offers no in-site player does the card open the original website — and the card tells you before you click. Pictures + the real title come automatically for YouTube, Vimeo, TikTok and Dailymotion a second after adding. Instagram, Facebook and Bilibili keep their pictures locked, so those cards show a styled poster unless you paste a poster image link. Links you add live in <b>My Additions</b> below, saved in this browser. Owner: to place a video in the Shared Library for every visitor, send the link to Muse — it goes live for everyone. BANNERS: every card has its own 🖼 button — set its picture by image link, by uploading an image, by pasting a copied image (Ctrl+V), or automatically from the video link itself.</p>
     <div class="row">
@@ -128,6 +130,7 @@
       <button class="ghost" id="exportBtn">⬇ Backup my additions (JSON)</button>
       <label class="ghost" style="padding:11px 18px; border-radius:12px; border:1px solid #3a3a58; background:#22223c; color:#eee; font-weight:600; cursor:pointer; font-size:15px;">⬆ Restore backup <input id="importIn" type="file" accept=".json,application/json" style="display:none;"></label>
     </div>
+    <div class="row" id="lockRow"><span class="note" style="align-self:center;">🔐 Owner mode is ON in this browser — visitors never see this panel.</span><button class="ghost" id="lockBtn" type="button">Lock owner mode on this device</button></div>
   </section>
 
   <section class="sect" id="sharedSect">
@@ -182,6 +185,7 @@
 </div>
 <script>
 const LOCAL_BUILD = false;
+const IS_OWNER = LOCAL_BUILD || (() => { try { return localStorage.getItem("vv_owner") === "1"; } catch (e) { return false; } })();
 const KEY = "videovault_linklib_v6";
 const FKEY = KEY + "_favs";
 const OLD_SAMPLE = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
@@ -367,9 +371,11 @@ function buildCard(v, isShared){
   const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
   sh.onclick = e => { e.stopPropagation(); window.open("https://wa.me/?text=" + encodeURIComponent(v.title + " — watch: " + v.url), "_blank", "noopener"); };
   acts.appendChild(cb); acts.appendChild(sh);
-  const bb = document.createElement("button"); bb.className = "icon"; bb.textContent = "🖼"; bb.title = "Banner / thumbnail — upload, paste or link";
-  bb.onclick = e => { e.stopPropagation(); openBanner(v, isShared); };
-  acts.appendChild(bb);
+  if (IS_OWNER) {
+    const bb = document.createElement("button"); bb.className = "icon"; bb.textContent = "🖼"; bb.title = "Banner / thumbnail — upload, paste or link";
+    bb.onclick = e => { e.stopPropagation(); openBanner(v, isShared); };
+    acts.appendChild(bb);
+  }
   if (!isShared) {
     const db = document.createElement("button"); db.className = "icon"; db.textContent = "✕"; db.title = "Remove";
     db.onclick = e => { e.stopPropagation(); mine = mine.filter(x => x.id !== v.id); saveMine(); render(); };
@@ -409,6 +415,7 @@ function render(){
   renderStats(); renderCats();
   fillGrid("gridShared", "emptyShared", applySort(sharedItems.filter(matches)), true);
   fillGrid("gridMine", "emptyMine", applySort(mine.filter(matches)), false);
+  document.getElementById("mineSect").style.display = (!IS_OWNER && mine.length === 0) ? "none" : "";
   const ft = document.getElementById("favToggle");
   ft.className = favOnly ? "" : "ghost"; ft.textContent = favOnly ? "★ Favourites" : "☆ Favourites";
 }
@@ -556,7 +563,7 @@ document.addEventListener("paste", e => {
 </style>
 <footer class="vvfoot">
   <div>
-    <a href="https://rizwan2980.github.io/videovault/privacy.html">Privacy Policy</a>·<a href="https://rizwan2980.github.io/videovault/terms.html">Terms of Use</a>·<a href="https://rizwan2980.github.io/videovault/about.html">About</a>·<a href="https://rizwan2980.github.io/videovault/contact.html">Contact</a>
+    <a href="#" id="vvOwnerLink">🔐 Owner</a>·<a href="https://rizwan2980.github.io/videovault/privacy.html">Privacy Policy</a>·<a href="https://rizwan2980.github.io/videovault/terms.html">Terms of Use</a>·<a href="https://rizwan2980.github.io/videovault/about.html">About</a>·<a href="https://rizwan2980.github.io/videovault/contact.html">Contact</a>
   </div>
   <div>© 2026 VideoVault · Curated by Rizwan Saeed · All videos belong to their respective owners and are played through the platforms' own official players.</div>
 </footer>
@@ -566,6 +573,24 @@ document.addEventListener("paste", e => {
 </div>
 <script>
 (function(){try{var b=document.getElementById('vvCookie');if(!localStorage.getItem('vv_cookies_ok'))b.style.display='flex';window.vvAcceptCookies=function(){try{localStorage.setItem('vv_cookies_ok','1');}catch(e){}b.style.display='none';};}catch(e){}})();
+</script>
+<script>
+(function(){
+  var link = document.getElementById('vvOwnerLink');
+  if (link) link.onclick = function(e){
+    e.preventDefault();
+    try { if (IS_OWNER) { alert('Owner mode is already ON in this browser.'); return; } } catch (err) {}
+    var code = prompt('Owner code:');
+    if (code === null) return;
+    if (code.trim() === 'rizwan786') { try { localStorage.setItem('vv_owner', '1'); } catch (err) {} location.reload(); }
+    else alert('Wrong code.');
+  };
+  var lb = document.getElementById('lockBtn');
+  if (lb) {
+    try { if (LOCAL_BUILD) { var lr = document.getElementById('lockRow'); if (lr) lr.style.display = 'none'; } } catch (err) {}
+    lb.onclick = function(){ try { localStorage.removeItem('vv_owner'); } catch (err) {} location.reload(); };
+  }
+})();
 </script>
 </body>
 </html>

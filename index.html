@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VideoVault — Watch Link Library</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0b0b12; color:#f2f2f5; font-family:system-ui, "Segoe UI", Arial, sans-serif; }
+  header { display:flex; align-items:center; gap:14px; padding:14px 18px; background:#12121e; border-bottom:2px solid #d4af37; position:sticky; top:0; z-index:10; flex-wrap:wrap; }
+  .logo { font-size:24px; font-weight:800; color:#d4af37; }
+  .logo span { color:#fff; }
+  .tagline { color:#9a9ab0; font-size:12px; width:100%; }
+  #search { flex:1; min-width:160px; padding:10px 14px; border-radius:24px; border:1px solid #33334a; background:#1b1b2c; color:#fff; font-size:15px; }
+  main { max-width:1180px; margin:0 auto; padding:18px; }
+  #stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .stat { background:#141424; border:1px solid #262640; border-radius:10px; padding:9px 14px; font-size:13px; color:#c9c9dd; }
+  .stat b { color:#d4af37; font-size:16px; }
+  #playerSection { display:none; margin-bottom:18px; }
+  #playerWrap { background:#000; border-radius:14px; overflow:hidden; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; border:1px solid #262640; }
+  #playerWrap iframe, #playerWrap video { width:100%; height:100%; border:0; }
+  #playerEmpty { color:#b9b9cf; text-align:center; padding:22px; font-size:16px; line-height:1.65; }
+  #nowTitle { font-size:20px; font-weight:700; margin:14px 2px 4px; }
+  #nowMeta, #playHint { color:#9a9ab0; font-size:13px; margin:0 2px 6px; line-height:1.55; }
+  #playHint { color:#c9a227; }
+  #closePlayer { margin:6px 2px 14px; }
+  .panel { background:#141424; border:1px solid #262640; border-radius:14px; padding:16px; margin-bottom:18px; }
+  .panel h2 { font-size:16px; color:#d4af37; margin-bottom:12px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  input[type=text], select { flex:1; min-width:170px; padding:11px 13px; border-radius:10px; border:1px solid #33334a; background:#1b1b2c; color:#fff; font-size:15px; }
+  button { padding:11px 18px; border-radius:10px; border:0; background:#d4af37; color:#14100a; font-weight:700; cursor:pointer; font-size:15px; }
+  button.ghost { background:#23233a; color:#eee; border:1px solid #3a3a58; font-weight:600; }
+  button:active { transform:scale(.97); }
+  #checkResult { font-size:14px; line-height:1.6; color:#d8d8e8; min-height:20px; }
+  .note { color:#8a8aa3; font-size:13px; line-height:1.65; margin-top:10px; }
+  .cats { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .cat { padding:8px 15px; border-radius:20px; background:#1d1d30; border:1px solid #33334f; cursor:pointer; font-size:14px; color:#eee; }
+  .cat.on { background:#d4af37; color:#14100a; font-weight:700; border-color:#d4af37; }
+  #grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
+  .card { background:#141424; border:1px solid #262640; border-radius:12px; overflow:hidden; cursor:pointer; position:relative; }
+  .card:hover { border-color:#d4af37; }
+  .thumb { aspect-ratio:16/9; background:#23233e center/cover; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .thumb .posterText { font-size:21px; font-weight:800; color:#fff; text-align:center; padding:10px; text-shadow:0 2px 10px #000; line-height:1.3; }
+  .thumb .playOverlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22); }
+  .thumb .playOverlay span { width:54px; height:54px; border-radius:50%; background:rgba(212,175,55,.92); color:#14100a; font-size:24px; display:flex; align-items:center; justify-content:center; padding-left:4px; }
+  .badge { position:absolute; top:8px; left:8px; background:rgba(10,10,18,.85); color:#d4af37; border:1px solid #d4af37; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; z-index:2; }
+  .cbody { padding:11px 12px; }
+  .ctitle { font-weight:600; font-size:15px; line-height:1.4; margin-bottom:7px; word-break:break-word; }
+  .cmeta { color:#9a9ab0; font-size:12px; margin-bottom:10px; }
+  .cactions { display:flex; gap:6px; flex-wrap:wrap; }
+  .cactions button { padding:7px 11px; font-size:13px; border-radius:8px; }
+  .icon { background:#23233a; border:1px solid #3a3a58; color:#eee; border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; }
+  .icon.fav { color:#ff5d7a; }
+  #emptyLib { color:#8a8aa3; text-align:center; padding:34px 10px; font-size:16px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Video<span>Vault</span> ▸</div>
+  <input id="search" type="text" placeholder="Search titles, sites, categories...">
+  <div class="tagline">Watch Link Library — paste any video link, get a poster card, click and watch on the original website.</div>
+</header>
+<main>
+  <div id="stats"></div>
+
+  <div id="playerSection">
+    <div id="playerWrap"></div>
+    <div id="nowTitle"></div>
+    <div id="nowMeta"></div>
+    <div id="playHint"></div>
+    <button class="ghost" id="closePlayer">✕ Close player</button>
+  </div>
+
+  <div class="panel">
+    <h2>＋ Add a video link — from ANY website</h2>
+    <div class="row">
+      <input id="linkIn" type="text" placeholder="Paste the video link here (YouTube, Bilibili, TikTok, Facebook, any site...)">
+    </div>
+    <div class="row">
+      <input id="titleIn" type="text" placeholder="Title (optional — auto-filled for YouTube, otherwise taken from the link)">
+      <input id="posterIn" type="text" placeholder="Poster image link (optional — auto for YouTube)">
+      <select id="catIn" style="flex:0 1 160px; min-width:130px;">
+        <option>Movies</option><option>General</option><option>Learning</option><option>Fun</option>
+        <option>Islamic</option><option>Games</option><option>Family</option>
+      </select>
+      <button id="addBtn">Add to Library</button>
+    </div>
+    <div id="checkResult"></div>
+    <p class="note">How it works: the link becomes a card with a picture, title and site badge. Clicking a card (or its Watch button) opens the video on its own website in a new window — exactly where it always plays best. For YouTube the picture + title come automatically. For other sites the picture comes automatically only if the site shares one; otherwise the card shows a styled poster with the title, and you can paste any poster image link to make it exact. Where a site also offers an in-site player (YouTube, Vimeo, Drive, bilibili.com, direct .mp4...), the card gets an extra “Play here” button as a bonus. Watch opens the original site WITHOUT telling it where the click came from (no-referrer), because a few strict sites (e.g. Bilibili, guarded by Akamai) sometimes block visits that arrive from inside other apps — if one still shows an error page, copy its link (⧉ button) and paste it directly into Chrome.</p>
+    <div class="row" style="margin-top:10px;">
+      <button class="ghost" id="exportBtn">⬇ Backup library (JSON)</button>
+      <label class="ghost" style="padding:11px 18px; border-radius:10px; border:1px solid #3a3a58; background:#23233a; color:#eee; font-weight:600; cursor:pointer; font-size:15px;">⬆ Restore backup <input id="importIn" type="file" accept=".json,application/json" style="display:none;"></label>
+    </div>
+  </div>
+
+  <div class="cats" id="cats"></div>
+  <div id="grid"></div>
+  <div id="emptyLib" style="display:none;">No videos here yet. Paste your first link above 👆</div>
+</main>
+
+<script>
+const KEY = "videovault_linklib_v6";
+let items = [];
+try { items = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch(e) { items = []; }
+if (!Array.isArray(items)) items = [];
+let activeCat = "All", query = "";
+
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(items)); } catch(e){} }
+function ytId(u){ let m = (u||"").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; }
+
+function classify(url){
+  url = (url || "").trim();
+  if (!url) return null;
+  if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+  let host = "";
+  try { host = new URL(url).hostname.replace(/^www\./, "").toLowerCase(); } catch(e) { return { error: "This does not look like a valid link. Paste the full video link, starting with https://" }; }
+  const id = ytId(url);
+  if (id) return { platform:"YouTube", kind:"embed", embed:"https://www.youtube.com/embed/"+id+"?rel=0", poster:"https://i.ytimg.com/vi/"+id+"/hqdefault.jpg", url };
+  let m;
+  if (host.includes("vimeo.com") && (m = url.match(/vimeo\.com\/(\d+)/))) return { platform:"Vimeo", kind:"embed", embed:"https://player.vimeo.com/video/"+m[1], poster:"", url };
+  if (host.includes("drive.google.com") && (m = url.match(/drive\.google\.com\/file\/d\/([^/]+)/))) return { platform:"Google Drive", kind:"embed", embed:"https://drive.google.com/file/d/"+m[1]+"/preview", poster:"", url };
+  if ((host.includes("dailymotion.com") || host === "dai.ly") && (m = url.match(/(?:video\/|dai\.ly\/)([A-Za-z0-9]+)/))) return { platform:"Dailymotion", kind:"embed", embed:"https://www.dailymotion.com/embed/video/"+m[1], poster:"", url };
+  if (host.includes("bilibili.com") && (m = url.match(/bilibili\.com\/video\/(BV[A-Za-z0-9]+)/))) return { platform:"Bilibili", kind:"embed", embed:"https://player.bilibili.com/player.html?bvid="+m[1]+"&page=1&high_quality=1", poster:"", url };
+  if (host.includes("bilibili.tv")) return { platform:"Bilibili TV", kind:"linkout", poster:"", url, note:"Bilibili TV gives no in-site player — this card opens the video on Bilibili, where it plays in the areas Bilibili allows." };
+  if (host.includes("tiktok.com") && (m = url.match(/tiktok\.com\/.*\/video\/(\d+)/))) return { platform:"TikTok", kind:"embed", embed:"https://www.tiktok.com/embed/v2/"+m[1], poster:"", url };
+  if (host.includes("instagram.com") && (m = url.match(/instagram\.com\/(reel|p|tv)\/([A-Za-z0-9_-]+)/))) return { platform:"Instagram", kind:"embed", embed:"https://www.instagram.com/"+m[1]+"/"+m[2]+"/embed", poster:"", url };
+  if (host.includes("facebook.com") || host === "fb.watch") return { platform:"Facebook", kind:"embed", embed:"https://www.facebook.com/plugins/video.php?href="+encodeURIComponent(url)+"&show_text=false", poster:"", url };
+  if (/\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url)) return { platform:"Video file", kind:"file", embed:url, poster:"", url };
+  const name = host.split(".")[0];
+  return { platform: name.charAt(0).toUpperCase() + name.slice(1), kind:"linkout", poster:"", url, note:"Link card — opens on the original website." };
+}
+function deriveTitle(url){
+  try {
+    const u = new URL(url);
+    const parts = u.pathname.split("/").filter(Boolean);
+    let last = parts.length ? decodeURIComponent(parts[parts.length - 1]) : u.hostname;
+    last = last.replace(/\.(html?|php|aspx?)$/i, "").replace(/[-_]+/g, " ").trim();
+    if (!last || /^\d+$/.test(last)) return u.hostname.replace(/^www\./, "") + " video";
+    return last.charAt(0).toUpperCase() + last.slice(1);
+  } catch(e) { return "Video link"; }
+}
+function verdictText(c){
+  if (!c) return "";
+  if (c.error) return "✕ " + c.error;
+  if (c.kind === "linkout") return "→ " + c.platform + ": link card added. Clicking it opens the video on " + c.platform + " in a new window. " + (c.note || "");
+  if (c.kind === "file") return "✓ " + c.platform + ": card added — Watch opens the file, and Play here plays it inside this website too.";
+  return "✓ " + c.platform + ": card added — Watch opens it on " + c.platform + ", and Play here plays it inside this website too." + (c.poster ? " Picture found automatically." : " Add a poster image link if you want a custom picture.");
+}
+
+let counter = 0;
+function addItem(data){
+  data.id = Date.now() + "_" + (counter++);
+  data.fav = false;
+  items.unshift(data); save(); render();
+}
+document.getElementById("addBtn").onclick = () => {
+  const linkEl = document.getElementById("linkIn");
+  const c = classify(linkEl.value);
+  const cr = document.getElementById("checkResult");
+  if (!c) { alert("Paste a video link first."); return; }
+  if (c.error) { cr.textContent = verdictText(c); alert(c.error); return; }
+  if (items.some(x => x.url === c.url)) { cr.textContent = "⚠ This link is already in your library."; alert("This link is already in your library."); return; }
+  const titleEl = document.getElementById("titleIn"), posterEl = document.getElementById("posterIn");
+  addItem({
+    title: titleEl.value.trim() || deriveTitle(c.url),
+    poster: posterEl.value.trim() || c.poster || "",
+    cat: document.getElementById("catIn").value,
+    platform: c.platform, kind: c.kind, embed: c.embed || "", url: c.url, note: c.note || ""
+  });
+  cr.textContent = verdictText(c);
+  linkEl.value = ""; titleEl.value = ""; posterEl.value = "";
+};
+document.getElementById("linkIn").addEventListener("input", e => {
+  const c = classify(e.target.value);
+  document.getElementById("checkResult").textContent = c ? verdictText(c) : "";
+});
+
+function openOriginal(v){ window.open(v.url, "_blank", "noopener,noreferrer"); }
+function playHere(v){
+  const sec = document.getElementById("playerSection");
+  const w = document.getElementById("playerWrap");
+  const hint = document.getElementById("playHint");
+  sec.style.display = "block"; w.innerHTML = ""; hint.textContent = "";
+  if (v.kind === "file") {
+    const el = document.createElement("video");
+    el.src = v.embed || v.url; el.controls = true; el.autoplay = true; el.playsInline = true;
+    el.onerror = () => { w.innerHTML = ""; const d = document.createElement("div"); d.id = "playerEmpty"; d.textContent = "✕ This video file could not be played — its link is broken/expired or the format is not supported. Use Watch to open it on the original site."; w.appendChild(d); };
+    w.appendChild(el);
+  } else {
+    const el = document.createElement("iframe");
+    el.src = v.embed; el.allow = "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"; el.allowFullscreen = true;
+    hint.textContent = "If this player stays black or shows an error, the source site is blocking in-site play or the video is restricted in your area — use Watch to open it on the original website instead.";
+    w.appendChild(el);
+  }
+  document.getElementById("nowTitle").textContent = v.title;
+  document.getElementById("nowMeta").textContent = v.platform + " • " + v.cat;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document.getElementById("closePlayer").onclick = () => {
+  document.getElementById("playerSection").style.display = "none";
+  document.getElementById("playerWrap").innerHTML = "";
+};
+
+function stats(){
+  const plats = new Set(items.map(v => v.platform));
+  document.getElementById("stats").innerHTML =
+    '<div class="stat"><b>' + items.length + '</b> videos saved</div>' +
+    '<div class="stat"><b>' + plats.size + '</b> websites</div>' +
+    '<div class="stat"><b>' + items.filter(v => v.kind !== "linkout").length + '</b> can also play here</div>' +
+    '<div class="stat"><b>' + items.filter(v => v.fav).length + '</b> favourites</div>';
+}
+function renderCats(){
+  const set = ["All", ...new Set(items.map(v => v.cat))];
+  const c = document.getElementById("cats"); c.innerHTML = "";
+  set.forEach(name => {
+    const b = document.createElement("button");
+    b.className = "cat" + (name === activeCat ? " on" : ""); b.textContent = name;
+    b.onclick = () => { activeCat = name; render(); }; c.appendChild(b);
+  });
+  const f = document.createElement("button");
+  f.className = "cat" + (activeCat === "★ Favourites" ? " on" : ""); f.textContent = "★ Favourites";
+  f.onclick = () => { activeCat = "★ Favourites"; render(); }; c.appendChild(f);
+}
+function render(){
+  stats(); renderCats();
+  const g = document.getElementById("grid"); g.innerHTML = "";
+  const q = query.toLowerCase();
+  const list = items.filter(v =>
+    (activeCat === "All" || (activeCat === "★ Favourites" ? v.fav : v.cat === activeCat)) &&
+    (v.title + " " + v.platform + " " + v.cat).toLowerCase().includes(q));
+  document.getElementById("emptyLib").style.display = list.length ? "none" : "block";
+  list.forEach(v => {
+    const card = document.createElement("div"); card.className = "card";
+    const th = document.createElement("div"); th.className = "thumb";
+    const badge = document.createElement("div"); badge.className = "badge"; badge.textContent = v.platform;
+    th.appendChild(badge);
+    if (v.poster) { th.style.backgroundImage = "url(" + JSON.stringify(v.poster).slice(1, -1) + ")"; }
+    else { const pt = document.createElement("div"); pt.className = "posterText"; pt.textContent = v.title; th.appendChild(pt); }
+    const ov = document.createElement("div"); ov.className = "playOverlay";
+    const pl = document.createElement("span"); pl.textContent = "▶"; ov.appendChild(pl); th.appendChild(ov);
+    const bd = document.createElement("div"); bd.className = "cbody";
+    const t = document.createElement("div"); t.className = "ctitle"; t.textContent = v.title;
+    const meta = document.createElement("div"); meta.className = "cmeta";
+    meta.textContent = v.platform + " • " + v.cat + (v.kind === "linkout" ? " • opens on " + v.platform : " • can play here too");
+    const acts = document.createElement("div"); acts.className = "cactions";
+    const wb = document.createElement("button"); wb.textContent = "Watch ↗"; wb.title = "Open on the original website";
+    wb.onclick = e => { e.stopPropagation(); openOriginal(v); };
+    acts.appendChild(wb);
+    if (v.kind !== "linkout") {
+      const pb = document.createElement("button"); pb.className = "ghost"; pb.textContent = "▶ Play here";
+      pb.onclick = e => { e.stopPropagation(); playHere(v); };
+      acts.appendChild(pb);
+    }
+    const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy link";
+    cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(v.url); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
+    const fb = document.createElement("button"); fb.className = "icon" + (v.fav ? " fav" : ""); fb.textContent = v.fav ? "♥" : "♡"; fb.title = "Favourite";
+    fb.onclick = e => { e.stopPropagation(); v.fav = !v.fav; save(); render(); };
+    const db = document.createElement("button"); db.className = "icon"; db.textContent = "✕"; db.title = "Remove";
+    db.onclick = e => { e.stopPropagation(); items = items.filter(x => x.id !== v.id); save(); render(); };
+    acts.appendChild(cb); acts.appendChild(fb); acts.appendChild(db);
+    bd.appendChild(t); bd.appendChild(meta); bd.appendChild(acts);
+    card.appendChild(th); card.appendChild(bd);
+    card.onclick = () => openOriginal(v);
+    g.appendChild(card);
+  });
+}
+document.getElementById("search").oninput = e => { query = e.target.value; render(); };
+document.getElementById("exportBtn").onclick = () => {
+  const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "videovault-library.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+};
+document.getElementById("importIn").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      if (!Array.isArray(data)) throw new Error("bad file");
+      let added = 0;
+      data.forEach(v => { if (v && v.url && v.title && !items.some(x => x.url === v.url)) { v.id = Date.now() + "_" + (counter++) + added; items.unshift(v); added++; } });
+      save(); render();
+      document.getElementById("checkResult").textContent = "✓ Backup restored: " + added + " new link(s) added.";
+    } catch(err) { alert("That file is not a VideoVault backup."); }
+  };
+  r.readAsText(f); e.target.value = "";
+});
+
+if (!items.length) {
+  items = [
+    { id:"seed2", title:"Big Buck Bunny — YouTube sample (picture + title came automatically)", poster:"https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg", cat:"Fun",
+      platform:"YouTube", kind:"embed", embed:"https://www.youtube.com/embed/aqz-KE-bpKQ?rel=0", url:"https://www.youtube.com/watch?v=aqz-KE-bpKQ", note:"", fav:false },
+    { id:"seed3", title:"Sample video file — plays inside this website", poster:"", cat:"Fun",
+      platform:"Video file", kind:"file", embed:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", url:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", note:"", fav:false }
+  ];
+  save();
+}
+render();
+</script>
+</body>
+</html>

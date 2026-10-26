@@ -75,6 +75,12 @@
   .mwrap iframe, .mwrap video { width:100%; height:100%; border:0; display:block; }
   .mfoot { padding:10px 16px 14px; }
   .hint { color:var(--mut); font-size:13px; line-height:1.5; }
+  .thumbImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .mbox.slim { width:min(540px, 100%); }
+  .bnrPrev { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:12px; background:#0d0d1c; border:1px solid var(--line); }
+  .dropZone { border:2px dashed #3a3a58; border-radius:12px; padding:16px; text-align:center; color:var(--mut); cursor:pointer; line-height:1.5; font-size:14px; }
+  .dropZone.over { border-color:var(--gold); color:var(--gold2); }
+  .bnrMsg { font-size:13.5px; min-height:19px; margin-top:10px; color:var(--gold2); }
   footer { text-align:center; color:var(--mut); font-size:13px; margin-top:44px; line-height:1.7; }
   footer b { color:var(--gold2); }
   @media (max-width:560px){ .logo{font-size:40px;} .mbox{border-radius:14px;} }
@@ -104,7 +110,7 @@
 
   <section class="panel">
     <h2>＋ Add a video link — from ANY website</h2>
-    <p class="note">THE ORDER: if a video CAN play inside VideoVault, clicking its card plays it HERE first, in the cinema player. Only when a site offers no in-site player does the card open the original website — and the card tells you before you click. Pictures + the real title come automatically for YouTube, Vimeo, TikTok and Dailymotion a second after adding. Instagram, Facebook and Bilibili keep their pictures locked, so those cards show a styled poster unless you paste a poster image link. Links you add live in <b>My Additions</b> below, saved in this browser. Owner: to place a video in the Shared Library for every visitor, send the link to Muse — it goes live for everyone.</p>
+    <p class="note">THE ORDER: if a video CAN play inside VideoVault, clicking its card plays it HERE first, in the cinema player. Only when a site offers no in-site player does the card open the original website — and the card tells you before you click. Pictures + the real title come automatically for YouTube, Vimeo, TikTok and Dailymotion a second after adding. Instagram, Facebook and Bilibili keep their pictures locked, so those cards show a styled poster unless you paste a poster image link. Links you add live in <b>My Additions</b> below, saved in this browser. Owner: to place a video in the Shared Library for every visitor, send the link to Muse — it goes live for everyone. BANNERS: every card has its own 🖼 button — set its picture by image link, by uploading an image, by pasting a copied image (Ctrl+V), or automatically from the video link itself.</p>
     <div class="row">
       <input type="text" id="linkIn" placeholder="Paste the video link here — youtube.com, vimeo.com, tiktok.com, any site…">
       <button id="addBtn">＋ Add to Library</button>
@@ -151,6 +157,29 @@
     <div class="mfoot"><p class="hint" id="mHint"></p></div>
   </div>
 </div>
+
+<div class="modal" id="bannerModal">
+  <div class="mbox slim">
+    <div class="mhead"><div class="t">🖼 Card banner / thumbnail</div><button class="ghost" id="bClose">✕</button></div>
+    <div style="padding:0 16px 16px;">
+      <img class="bnrPrev" id="bPrev" alt="" style="display:none;">
+      <p class="hint" id="bFor" style="margin:8px 0;"></p>
+      <div class="row">
+        <input type="text" id="bLink" placeholder="Paste an image link (https://… .jpg / .png / .webp)">
+        <button id="bApply">Use this link</button>
+      </div>
+      <div class="row">
+        <button class="ghost" id="bAuto">✨ Get banner from the video link itself</button>
+        <button class="ghost" id="bRemove">Remove banner</button>
+      </div>
+      <div class="dropZone" id="bDrop" style="margin-top:12px;">
+        📥 Click to upload an image — or drag &amp; drop it here — or copy any image in Chrome (right-click a picture → “Copy image”) and press Ctrl+V
+        <input type="file" id="bFile" accept="image/*" style="display:none;">
+      </div>
+      <p class="bnrMsg" id="bMsg"></p>
+    </div>
+  </div>
+</div>
 <script>
 const LOCAL_BUILD = false;
 const KEY = "videovault_linklib_v6";
@@ -176,6 +205,11 @@ mine.forEach(v => { if (v.url === OLD_SAMPLE) { v.url = NEW_SAMPLE; v.embed = NE
 let favUrls = new Set();
 try { favUrls = new Set(JSON.parse(localStorage.getItem(FKEY) || "[]")); } catch(e) { favUrls = new Set(); }
 mine.forEach(v => { if (v.fav) favUrls.add(v.url); });
+const PKEY = KEY + "_posters";
+let posterOverrides = {};
+try { posterOverrides = JSON.parse(localStorage.getItem(PKEY) || "{}"); } catch(e) { posterOverrides = {}; }
+function saveOverrides(){ try { localStorage.setItem(PKEY, JSON.stringify(posterOverrides)); } catch(e){} }
+function effPoster(v){ return posterOverrides[v.url] || v.poster || ""; }
 let activeCat = "All", query = "", sortMode = "new", favOnly = false;
 
 function saveMine(){ try { localStorage.setItem(KEY, JSON.stringify(mine)); } catch(e){} }
@@ -288,16 +322,21 @@ function applySort(list){
   else if (sortMode === "site") a.sort((x, y) => x.platform.localeCompare(y.platform) || x.title.localeCompare(y.title));
   return a;
 }
+function artFor(v){
+  const art = document.createElement("div"); art.className = "posterArt"; art.style.background = gradFor(v.platform);
+  const big = document.createElement("div"); big.className = "big"; big.textContent = (v.platform || "V").charAt(0).toUpperCase();
+  const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = v.title;
+  art.appendChild(big); art.appendChild(cap); return art;
+}
 function buildCard(v, isShared){
   const card = document.createElement("div"); card.className = "card";
   const th = document.createElement("div"); th.className = "thumb";
-  if (v.poster) th.style.backgroundImage = "url(" + JSON.stringify(v.poster).slice(1, -1) + ")";
-  else {
-    const art = document.createElement("div"); art.className = "posterArt"; art.style.background = gradFor(v.platform);
-    const big = document.createElement("div"); big.className = "big"; big.textContent = (v.platform || "V").charAt(0).toUpperCase();
-    const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = v.title;
-    art.appendChild(big); art.appendChild(cap); th.appendChild(art);
-  }
+  const ep = effPoster(v);
+  if (ep) {
+    const img = document.createElement("img"); img.className = "thumbImg"; img.alt = ""; img.referrerPolicy = "no-referrer";
+    img.onerror = () => { img.remove(); th.insertBefore(artFor(v), th.firstChild); };
+    img.src = ep; th.appendChild(img);
+  } else th.appendChild(artFor(v));
   const badge = document.createElement("div"); badge.className = "badge"; badge.textContent = v.platform; th.appendChild(badge);
   const pill = document.createElement("div");
   if (v.kind !== "linkout") { pill.className = "insidePill"; pill.textContent = "▶ PLAYS INSIDE"; }
@@ -328,6 +367,9 @@ function buildCard(v, isShared){
   const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
   sh.onclick = e => { e.stopPropagation(); window.open("https://wa.me/?text=" + encodeURIComponent(v.title + " — watch: " + v.url), "_blank", "noopener"); };
   acts.appendChild(cb); acts.appendChild(sh);
+  const bb = document.createElement("button"); bb.className = "icon"; bb.textContent = "🖼"; bb.title = "Banner / thumbnail — upload, paste or link";
+  bb.onclick = e => { e.stopPropagation(); openBanner(v, isShared); };
+  acts.appendChild(bb);
   if (!isShared) {
     const db = document.createElement("button"); db.className = "icon"; db.textContent = "✕"; db.title = "Remove";
     db.onclick = e => { e.stopPropagation(); mine = mine.filter(x => x.id !== v.id); saveMine(); render(); };
@@ -428,6 +470,81 @@ mine.filter(v => !v.poster && oembedUrl(v)).forEach((v, i) => setTimeout(() => e
 fetch("library.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => {
   if (Array.isArray(j) && j.length) { sharedItems = j.map(x => Object.assign({}, x, { shared: true })); render(); }
 }).catch(() => {});
+</script>
+
+<script>
+// ---- Banner editor (v11): link / upload / drag-drop / paste / auto-from-video-link ----
+let bTarget = null, bShared = false;
+function bMsg(t, bad){ const m = document.getElementById("bMsg"); m.textContent = t; m.style.color = bad ? "#ff8f8f" : "#f1d27a"; }
+function refreshBPrev(){
+  const p = document.getElementById("bPrev");
+  const ep = bTarget ? effPoster(bTarget) : "";
+  p.style.display = ep ? "block" : "none"; if (ep) p.src = ep; else p.removeAttribute("src");
+  document.getElementById("bFor").textContent = bTarget ? ("For: " + bTarget.title + (bShared ? " — Shared card: the new banner shows in this browser. To make it permanent for every visitor, ask Muse." : "")) : "";
+}
+function setBanner(val){
+  if (!bTarget) return;
+  if (bShared) { if (val) posterOverrides[bTarget.url] = val; else delete posterOverrides[bTarget.url]; saveOverrides(); }
+  else { bTarget.poster = val; saveMine(); }
+  render(); refreshBPrev();
+  bMsg(val ? "✓ Banner saved." : "Banner removed.", false);
+}
+function openBanner(v, isShared){
+  bTarget = v; bShared = isShared;
+  document.getElementById("bLink").value = "";
+  bMsg("", false); refreshBPrev();
+  document.getElementById("bannerModal").classList.add("open");
+}
+function closeBanner(){ document.getElementById("bannerModal").classList.remove("open"); bTarget = null; }
+document.getElementById("bClose").onclick = closeBanner;
+document.getElementById("bannerModal").addEventListener("click", e => { if (e.target.id === "bannerModal") closeBanner(); });
+function probeSetBanner(val){
+  const im = new Image(); im.referrerPolicy = "no-referrer";
+  im.onload = () => setBanner(val);
+  im.onerror = () => bMsg("✕ That image link could not be loaded — the site may be blocking it, or it is not a direct image link. Instead: right-click the picture anywhere → Copy image → paste here with Ctrl+V, or upload the image file.", true);
+  im.src = val;
+}
+document.getElementById("bApply").onclick = () => {
+  const val = document.getElementById("bLink").value.trim();
+  if (!val) { bMsg("Paste an image link first.", true); return; }
+  bMsg("Checking the image…", false); probeSetBanner(val);
+};
+document.getElementById("bRemove").onclick = () => setBanner("");
+document.getElementById("bAuto").onclick = () => {
+  if (!bTarget) return;
+  const api = oembedUrl(bTarget);
+  if (!api) { bMsg(bTarget.platform + " does not share its pictures with other websites — use upload or paste instead.", true); return; }
+  bMsg("Asking " + bTarget.platform + " for the picture…", false);
+  fetch(api).then(r => r.ok ? r.json() : null).then(j => {
+    if (j && j.thumbnail_url) probeSetBanner(j.thumbnail_url);
+    else bMsg("✕ " + bTarget.platform + " did not give a picture for this video — try upload or paste.", true);
+  }).catch(() => bMsg("✕ Could not reach " + bTarget.platform + " — try upload or paste.", true));
+};
+function fileToBanner(file){
+  if (!file) return;
+  if (file.size <= 300 * 1024) { const r = new FileReader(); r.onload = () => setBanner(r.result); r.readAsDataURL(file); return; }
+  const url = URL.createObjectURL(file); const im = new Image();
+  im.onload = () => {
+    const scale = Math.min(1, 880 / im.naturalWidth);
+    const cv = document.createElement("canvas"); cv.width = Math.max(1, Math.round(im.naturalWidth * scale)); cv.height = Math.max(1, Math.round(im.naturalHeight * scale));
+    cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+    URL.revokeObjectURL(url); setBanner(cv.toDataURL("image/jpeg", 0.82));
+  };
+  im.onerror = () => bMsg("✕ That file could not be read as an image.", true);
+  im.src = url;
+}
+const bDrop = document.getElementById("bDrop"), bFile = document.getElementById("bFile");
+bDrop.onclick = () => bFile.click();
+bFile.onchange = () => { fileToBanner(bFile.files[0]); bFile.value = ""; };
+["dragover", "dragleave", "drop"].forEach(ev => bDrop.addEventListener(ev, e => {
+  e.preventDefault(); bDrop.classList.toggle("over", ev === "dragover");
+  if (ev === "drop" && e.dataTransfer && e.dataTransfer.files.length) fileToBanner(e.dataTransfer.files[0]);
+}));
+document.addEventListener("paste", e => {
+  if (!bTarget) return;
+  const items = (e.clipboardData && e.clipboardData.items) || [];
+  for (const it of items) { if (it.type && it.type.indexOf("image/") === 0) { e.preventDefault(); fileToBanner(it.getAsFile()); return; } }
+});
 </script>
 </body>
 </html>

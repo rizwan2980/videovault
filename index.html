@@ -4,112 +4,185 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VideoVault — Watch Link Library</title>
+<meta name="description" content="VideoVault — one premium library for video links from every website. Play inside where the site allows, or open on the original website.">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#0b0b12; color:#f2f2f5; font-family:system-ui, "Segoe UI", Arial, sans-serif; }
-  header { display:flex; align-items:center; gap:14px; padding:14px 18px; background:#12121e; border-bottom:2px solid #d4af37; position:sticky; top:0; z-index:10; flex-wrap:wrap; }
-  .logo { font-size:24px; font-weight:800; color:#d4af37; }
-  .logo span { color:#fff; }
-  .tagline { color:#9a9ab0; font-size:12px; width:100%; }
-  #search { flex:1; min-width:160px; padding:10px 14px; border-radius:24px; border:1px solid #33334a; background:#1b1b2c; color:#fff; font-size:15px; }
-  main { max-width:1180px; margin:0 auto; padding:18px; }
-  #stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
-  .stat { background:#141424; border:1px solid #262640; border-radius:10px; padding:9px 14px; font-size:13px; color:#c9c9dd; }
-  .stat b { color:#d4af37; font-size:16px; }
-  #playerSection { display:none; margin-bottom:18px; }
-  #playerWrap { background:#000; border-radius:14px; overflow:hidden; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; border:1px solid #262640; }
-  #playerWrap iframe, #playerWrap video { width:100%; height:100%; border:0; }
-  #playerEmpty { color:#b9b9cf; text-align:center; padding:22px; font-size:16px; line-height:1.65; }
-  #nowTitle { font-size:20px; font-weight:700; margin:14px 2px 4px; }
-  #nowMeta, #playHint { color:#9a9ab0; font-size:13px; margin:0 2px 6px; line-height:1.55; }
-  #playHint { color:#c9a227; }
-  #closePlayer { margin:6px 2px 14px; }
-  .panel { background:#141424; border:1px solid #262640; border-radius:14px; padding:16px; margin-bottom:18px; }
-  .panel h2 { font-size:16px; color:#d4af37; margin-bottom:12px; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-  input[type=text], select { flex:1; min-width:170px; padding:11px 13px; border-radius:10px; border:1px solid #33334a; background:#1b1b2c; color:#fff; font-size:15px; }
-  button { padding:11px 18px; border-radius:10px; border:0; background:#d4af37; color:#14100a; font-weight:700; cursor:pointer; font-size:15px; }
-  button.ghost { background:#23233a; color:#eee; border:1px solid #3a3a58; font-weight:600; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root { --gold:#d4af37; --gold2:#f1d27a; --ink:#0b0b14; --panel:#151528; --panel2:#1d1d33; --line:#2e2e4a; --txt:#f2f2f7; --mut:#a7a7c2; }
+  body { font-family:'Segoe UI', system-ui, Arial, sans-serif; color:var(--txt); min-height:100vh;
+    background: radial-gradient(1200px 600px at 80% -10%, #2b2350 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 20%, #3a2c12 0%, transparent 55%),
+                linear-gradient(180deg, #0b0b14, #101020 40%, #0b0b14); }
+  .wrap { max-width:1180px; margin:0 auto; padding:0 16px 60px; }
+  header.hero { text-align:center; padding:44px 10px 8px; }
+  .logo { font-size:52px; line-height:1; filter: drop-shadow(0 6px 18px rgba(212,175,55,.45)); }
+  h1.brand { font-size:clamp(34px, 6vw, 54px); letter-spacing:.5px; margin-top:6px;
+    background:linear-gradient(92deg, #fff 20%, var(--gold2) 45%, var(--gold) 60%, #fff 85%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:800; }
+  .tag { color:var(--mut); font-size:clamp(14px,2.4vw,17px); margin-top:6px; }
+  .chips { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:18px 0 4px; }
+  .chip { background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:13.5px; color:var(--mut); }
+  .chip b { color:var(--gold2); font-size:15px; }
+  .panel { background:linear-gradient(180deg, var(--panel2), var(--panel)); border:1px solid var(--line); border-radius:18px; padding:18px; margin-top:18px; box-shadow:0 12px 30px rgba(0,0,0,.35); }
+  .panel h2 { font-size:19px; margin-bottom:6px; }
+  .note { color:var(--mut); font-size:13.5px; line-height:1.55; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  input[type=text], select { flex:1 1 200px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#101020; color:var(--txt); font-size:15px; }
+  input[type=text]:focus, select:focus { outline:2px solid var(--gold); border-color:transparent; }
+  button { padding:11px 18px; border-radius:12px; border:0; background:linear-gradient(180deg, var(--gold2), var(--gold)); color:#171106; font-weight:700; cursor:pointer; font-size:15px; box-shadow:0 4px 14px rgba(212,175,55,.25); }
+  button.ghost { background:#22223c; color:#eee; border:1px solid #3a3a58; font-weight:600; box-shadow:none; }
   button:active { transform:scale(.97); }
-  #checkResult { font-size:14px; line-height:1.6; color:#d8d8e8; min-height:20px; }
-  .note { color:#8a8aa3; font-size:13px; line-height:1.65; margin-top:10px; }
-  .cats { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-  .cat { padding:8px 15px; border-radius:20px; background:#1d1d30; border:1px solid #33334f; cursor:pointer; font-size:14px; color:#eee; }
-  .cat.on { background:#d4af37; color:#14100a; font-weight:700; border-color:#d4af37; }
-  #grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
-  .card { background:#141424; border:1px solid #262640; border-radius:12px; overflow:hidden; cursor:pointer; position:relative; }
-  .card:hover { border-color:#d4af37; }
-  .thumb { aspect-ratio:16/9; background:#23233e center/cover; position:relative; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-  .thumb .posterText { font-size:21px; font-weight:800; color:#fff; text-align:center; padding:10px; text-shadow:0 2px 10px #000; line-height:1.3; }
-  .thumb .playOverlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.22); }
-  .thumb .playOverlay span { width:54px; height:54px; border-radius:50%; background:rgba(212,175,55,.92); color:#14100a; font-size:24px; display:flex; align-items:center; justify-content:center; padding-left:4px; }
-  .badge { position:absolute; top:8px; left:8px; background:rgba(10,10,18,.85); color:#d4af37; border:1px solid #d4af37; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; z-index:2; }
-  .cbody { padding:11px 12px; }
-  .ctitle { font-weight:600; font-size:15px; line-height:1.4; margin-bottom:7px; word-break:break-word; }
-  .cmeta { color:#9a9ab0; font-size:12px; margin-bottom:10px; }
-  .cactions { display:flex; gap:6px; flex-wrap:wrap; }
-  .cactions button { padding:7px 11px; font-size:13px; border-radius:8px; }
-  .icon { background:#23233a; border:1px solid #3a3a58; color:#eee; border-radius:8px; padding:6px 10px; font-size:13px; cursor:pointer; }
-  .icon.fav { color:#ff5d7a; }
-  #emptyLib { color:#8a8aa3; text-align:center; padding:34px 10px; font-size:16px; }
+  #checkResult { margin-top:10px; font-size:14px; color:var(--gold2); min-height:20px; }
+  .toolbar { position:sticky; top:0; z-index:40; padding:12px 0 8px; background:linear-gradient(180deg, rgba(11,11,20,.96), rgba(11,11,20,.88)); backdrop-filter: blur(6px); }
+  .toolbar .row { align-items:center; }
+  .toolbar input[type=text] { flex:1 1 240px; }
+  .cats { display:flex; gap:8px; overflow-x:auto; padding:10px 2px 4px; scrollbar-width:none; }
+  .cats::-webkit-scrollbar { display:none; }
+  .cat { white-space:nowrap; padding:8px 15px; border-radius:999px; border:1px solid var(--line); background:#191930; color:var(--mut); font-size:14px; font-weight:600; box-shadow:none; }
+  .cat.on { background:linear-gradient(180deg, var(--gold2), var(--gold)); color:#171106; border-color:transparent; }
+  .sect { margin-top:26px; }
+  .sectHead { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+  .sectHead h2 { font-size:22px; }
+  .sectHead span { color:var(--mut); font-size:13.5px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(262px, 1fr)); gap:16px; }
+  .card { background:linear-gradient(180deg, #1e1e36, #14142a); border:1px solid var(--line); border-radius:16px; overflow:hidden; cursor:pointer; transition:transform .18s ease, box-shadow .18s ease, border-color .18s; animation:rise .35s ease both; }
+  .card:hover { transform:translateY(-4px); box-shadow:0 16px 34px rgba(0,0,0,.5); border-color:#4a4370; }
+  @keyframes rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  .thumb { position:relative; aspect-ratio:16/9; background:#0d0d1c center/cover no-repeat; display:flex; align-items:center; justify-content:center; }
+  .badge { position:absolute; top:8px; left:8px; background:rgba(5,5,12,.78); color:#fff; border:1px solid rgba(255,255,255,.18); padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:700; letter-spacing:.3px; }
+  .insidePill { position:absolute; bottom:8px; left:8px; background:rgba(212,175,55,.92); color:#171106; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:800; }
+  .outPill { position:absolute; bottom:8px; left:8px; background:rgba(20,20,35,.85); color:#d9d9ea; border:1px solid var(--line); padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:700; }
+  .favBtn { position:absolute; top:6px; right:6px; background:rgba(5,5,12,.6); border:0; box-shadow:none; font-size:19px; padding:4px 8px; color:#fff; border-radius:999px; }
+  .favBtn.fav { color:#ff5d7a; }
+  .playOverlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at center, transparent 30%, rgba(0,0,0,.35)); opacity:.92; }
+  .playOverlay span { width:58px; height:58px; border-radius:50%; background:rgba(212,175,55,.95); color:#171106; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 8px 22px rgba(0,0,0,.5); }
+  .posterArt { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:14px; text-align:center; }
+  .posterArt .big { font-size:44px; font-weight:800; color:rgba(255,255,255,.9); text-shadow:0 4px 16px rgba(0,0,0,.6); }
+  .posterArt .cap { font-size:13px; color:rgba(255,255,255,.85); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .cbody { padding:12px 14px 14px; }
+  .ctitle { font-weight:700; font-size:15.5px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:42px; }
+  .cmeta { color:var(--mut); font-size:12.5px; margin-top:4px; }
+  .cnote { color:#c9b96a; font-size:12px; margin-top:6px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .cactions { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .cactions button { padding:8px 12px; font-size:13px; border-radius:9px; }
+  .cactions .icon { background:#22223c; color:#eee; border:1px solid #3a3a58; box-shadow:none; padding:8px 10px; }
+  .empty { color:var(--mut); text-align:center; padding:26px 10px; border:1px dashed var(--line); border-radius:14px; }
+  .modal { position:fixed; inset:0; z-index:100; display:none; align-items:center; justify-content:center; background:rgba(4,4,10,.82); backdrop-filter: blur(4px); padding:14px; }
+  .modal.open { display:flex; }
+  .mbox { width:min(960px, 100%); background:#12122a; border:1px solid #3d3d63; border-radius:18px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,.7); animation:rise .25s ease both; }
+  .mhead { display:flex; align-items:center; gap:10px; padding:12px 16px; }
+  .mhead .t { font-weight:700; font-size:16px; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .mwrap { aspect-ratio:16/9; background:#000; }
+  .mwrap iframe, .mwrap video { width:100%; height:100%; border:0; display:block; }
+  .mfoot { padding:10px 16px 14px; }
+  .hint { color:var(--mut); font-size:13px; line-height:1.5; }
+  footer { text-align:center; color:var(--mut); font-size:13px; margin-top:44px; line-height:1.7; }
+  footer b { color:var(--gold2); }
+  @media (max-width:560px){ .logo{font-size:40px;} .mbox{border-radius:14px;} }
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">Video<span>Vault</span> ▸</div>
-  <input id="search" type="text" placeholder="Search titles, sites, categories...">
-  <div class="tagline">Watch Link Library — paste any video link, get a poster card, click and watch on the original website.</div>
-</header>
-<main>
-  <div id="stats"></div>
+<div class="wrap">
+  <header class="hero">
+    <div class="logo">🎬</div>
+    <h1 class="brand">VideoVault</h1>
+    <p class="tag">Watch Link Library — paste any video link, get a premium card, and play it right here where the site allows.</p>
+    <div class="chips" id="stats"></div>
+  </header>
 
-  <div id="playerSection">
-    <div id="playerWrap"></div>
-    <div id="nowTitle"></div>
-    <div id="nowMeta"></div>
-    <div id="playHint"></div>
-    <button class="ghost" id="closePlayer">✕ Close player</button>
+  <div class="toolbar">
+    <div class="row" style="margin-top:0;">
+      <input type="text" id="search" placeholder="🔎 Search videos, sites, categories…">
+      <select id="sortSel" style="flex:0 1 170px;">
+        <option value="new">Sort: Newest first</option>
+        <option value="az">Sort: A – Z</option>
+        <option value="site">Sort: By website</option>
+      </select>
+      <button class="ghost" id="favToggle">☆ Favourites</button>
+    </div>
+    <div class="cats" id="cats"></div>
   </div>
 
-  <div class="panel">
+  <section class="panel">
     <h2>＋ Add a video link — from ANY website</h2>
+    <p class="note">THE ORDER: if a video CAN play inside VideoVault, clicking its card plays it HERE first, in the cinema player. Only when a site offers no in-site player does the card open the original website — and the card tells you before you click. Pictures + the real title come automatically for YouTube, Vimeo, TikTok and Dailymotion a second after adding. Instagram, Facebook and Bilibili keep their pictures locked, so those cards show a styled poster unless you paste a poster image link. Links you add live in <b>My Additions</b> below, saved in this browser. Owner: to place a video in the Shared Library for every visitor, send the link to Muse — it goes live for everyone.</p>
     <div class="row">
-      <input id="linkIn" type="text" placeholder="Paste the video link here (YouTube, Bilibili, TikTok, Facebook, any site...)">
+      <input type="text" id="linkIn" placeholder="Paste the video link here — youtube.com, vimeo.com, tiktok.com, any site…">
+      <button id="addBtn">＋ Add to Library</button>
     </div>
     <div class="row">
-      <input id="titleIn" type="text" placeholder="Title (optional — auto-filled for YouTube, otherwise taken from the link)">
-      <input id="posterIn" type="text" placeholder="Poster image link (optional — auto for YouTube)">
-      <select id="catIn" style="flex:0 1 160px; min-width:130px;">
-        <option>Movies</option><option>General</option><option>Learning</option><option>Fun</option>
-        <option>Islamic</option><option>Games</option><option>Family</option>
+      <input type="text" id="titleIn" placeholder="Title (optional — auto-filled for many sites)">
+      <input type="text" id="posterIn" placeholder="Poster image link (optional)">
+      <select id="catIn" style="flex:0 1 170px;">
+        <option>Movies</option><option>Fun</option><option>Music</option><option>Sports</option>
+        <option>Learning</option><option>News</option><option>Social</option><option>Other</option>
       </select>
-      <button id="addBtn">Add to Library</button>
     </div>
     <div id="checkResult"></div>
-    <p class="note">How it works: the link becomes a card with a picture, title and site badge. THE ORDER (owner's choice): if a video CAN play inside this website, clicking its card plays it HERE first. Only when a site offers no in-site player does clicking open the video on its own website instead — and the card says so before you click. Pictures + the real title now come automatically for YouTube, Vimeo, TikTok and Dailymotion — fetched from the site itself a second after you add the link. Instagram, Facebook and Bilibili keep their pictures locked away from other websites, so those cards show the title as their poster unless you paste a poster image link yourself. Sites with an in-site player (YouTube, Vimeo, Drive, bilibili.com, direct .mp4...) carry the big gold ▶ Play here button. Watch opens the original site WITHOUT telling it where the click came from (no-referrer), because a few strict sites (e.g. Bilibili, guarded by Akamai) sometimes block visits that arrive from inside other apps — if one still shows an error page, copy its link (⧉ button) and paste it directly into Chrome.</p>
-    <div class="row" style="margin-top:10px;">
-      <button class="ghost" id="exportBtn">⬇ Backup library (JSON)</button>
-      <label class="ghost" style="padding:11px 18px; border-radius:10px; border:1px solid #3a3a58; background:#23233a; color:#eee; font-weight:600; cursor:pointer; font-size:15px;">⬆ Restore backup <input id="importIn" type="file" accept=".json,application/json" style="display:none;"></label>
+    <div class="row">
+      <button class="ghost" id="exportBtn">⬇ Backup my additions (JSON)</button>
+      <label class="ghost" style="padding:11px 18px; border-radius:12px; border:1px solid #3a3a58; background:#22223c; color:#eee; font-weight:600; cursor:pointer; font-size:15px;">⬆ Restore backup <input id="importIn" type="file" accept=".json,application/json" style="display:none;"></label>
     </div>
+  </section>
+
+  <section class="sect" id="sharedSect">
+    <div class="sectHead"><h2>🌐 Shared Library</h2><span>— the owner's list, the same for every visitor, on every device</span></div>
+    <div class="grid" id="gridShared"></div>
+    <div class="empty" id="emptyShared" style="display:none;">No shared videos match your search/filter.</div>
+  </section>
+
+  <section class="sect" id="mineSect">
+    <div class="sectHead"><h2>⭐ My Additions</h2><span>— your own links, saved in this browser</span></div>
+    <div class="grid" id="gridMine"></div>
+    <div class="empty" id="emptyMine">Nothing here yet — paste any video link above and it becomes a card here.</div>
+  </section>
+
+  <footer>
+    <b>VideoVault</b> — every video stays on its own website and plays through that site's own player.<br>
+    Made for video lovers: one library, every website. 🎬
+  </footer>
+</div>
+
+<div class="modal" id="modal">
+  <div class="mbox">
+    <div class="mhead"><div class="t" id="mTitle"></div>
+      <button class="ghost" id="mOpen">Open on the original site ↗</button>
+      <button class="ghost" id="mClose">✕</button></div>
+    <div class="mwrap" id="mWrap"></div>
+    <div class="mfoot"><p class="hint" id="mHint"></p></div>
   </div>
-
-  <div class="cats" id="cats"></div>
-  <div id="grid"></div>
-  <div id="emptyLib" style="display:none;">No videos here yet. Paste your first link above 👆</div>
-</main>
-
+</div>
 <script>
+const LOCAL_BUILD = false;
 const KEY = "videovault_linklib_v6";
-let items = [];
-try { items = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch(e) { items = []; }
-// One-time repair: the old sample-file host stopped serving; point any saved copy at the working sample.
-items.forEach(v => { if (v.url === "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4") { v.url = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"; v.embed = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"; } });
-if (!Array.isArray(items)) items = [];
-let activeCat = "All", query = "";
+const FKEY = KEY + "_favs";
+const OLD_SAMPLE = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+const NEW_SAMPLE = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
 
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(items)); } catch(e){} }
+const FALLBACK_SHARED = [
+  { id:"fb1", title:"Big Buck Bunny — YouTube sample (picture + title came automatically)", poster:"https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg", cat:"Fun",
+    platform:"YouTube", kind:"embed", embed:"https://www.youtube.com/embed/aqz-KE-bpKQ?rel=0", url:"https://www.youtube.com/watch?v=aqz-KE-bpKQ", note:"", shared:true },
+  { id:"fb2", title:"Sample video file — plays inside this website", poster:"", cat:"Fun",
+    platform:"Video file", kind:"file", embed:NEW_SAMPLE, url:NEW_SAMPLE, note:"", shared:true }
+];
+if (LOCAL_BUILD) FALLBACK_SHARED.push(
+  { id:"fb3", title:"HOPE (2026) Korean Movie | A Film by Hong Jin | Hindi Dubbed", poster:"", cat:"Movies",
+    platform:"Bilibili TV", kind:"linkout", embed:"", url:"https://www.bilibili.tv/en/video/4801384054266880",
+    note:"Plays on Bilibili in Pakistan (owner-verified); blocked in some other areas.", shared:true });
+
+let sharedItems = FALLBACK_SHARED.slice();
+let mine = [];
+try { mine = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch(e) { mine = []; }
+mine.forEach(v => { if (v.url === OLD_SAMPLE) { v.url = NEW_SAMPLE; v.embed = NEW_SAMPLE; } });
+let favUrls = new Set();
+try { favUrls = new Set(JSON.parse(localStorage.getItem(FKEY) || "[]")); } catch(e) { favUrls = new Set(); }
+mine.forEach(v => { if (v.fav) favUrls.add(v.url); });
+let activeCat = "All", query = "", sortMode = "new", favOnly = false;
+
+function saveMine(){ try { localStorage.setItem(KEY, JSON.stringify(mine)); } catch(e){} }
+function saveFavs(){ try { localStorage.setItem(FKEY, JSON.stringify([...favUrls])); } catch(e){} }
+function isFav(v){ return favUrls.has(v.url); }
+
 function ytId(u){ let m = (u||"").match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; }
-
 function classify(url){
   url = (url || "").trim();
   if (!url) return null;
@@ -148,38 +221,6 @@ function verdictText(c){
   if (c.kind === "file") return "✓ " + c.platform + ": card added — click the card or ▶ Play here and it plays INSIDE this website. (Watch ↗ opens the file directly instead.)";
   return "✓ " + c.platform + ": card added — click the card or ▶ Play here and it plays INSIDE this website. (Watch ↗ opens it on " + c.platform + " instead.)" + (c.poster ? " Picture found automatically." : " Add a poster image link if you want a custom picture.");
 }
-
-let counter = 0;
-function addItem(data){
-  data.id = Date.now() + "_" + (counter++);
-  data.fav = false;
-  items.unshift(data); save(); render();
-}
-document.getElementById("addBtn").onclick = () => {
-  const linkEl = document.getElementById("linkIn");
-  const c = classify(linkEl.value);
-  const cr = document.getElementById("checkResult");
-  if (!c) { alert("Paste a video link first."); return; }
-  if (c.error) { cr.textContent = verdictText(c); alert(c.error); return; }
-  if (items.some(x => x.url === c.url)) { cr.textContent = "⚠ This link is already in your library."; alert("This link is already in your library."); return; }
-  const titleEl = document.getElementById("titleIn"), posterEl = document.getElementById("posterIn");
-  const newItem = {
-    title: titleEl.value.trim() || deriveTitle(c.url),
-    poster: posterEl.value.trim() || c.poster || "",
-    cat: document.getElementById("catIn").value,
-    platform: c.platform, kind: c.kind, embed: c.embed || "", url: c.url, note: c.note || ""
-  };
-  addItem(newItem);
-  enrichItem(newItem, !!titleEl.value.trim(), !!posterEl.value.trim());
-  cr.textContent = verdictText(c);
-  linkEl.value = ""; titleEl.value = ""; posterEl.value = "";
-};
-document.getElementById("linkIn").addEventListener("input", e => {
-  const c = classify(e.target.value);
-  document.getElementById("checkResult").textContent = c ? verdictText(c) : "";
-});
-
-function openOriginal(v){ window.open(v.url, "_blank", "noopener,noreferrer"); }
 function oembedUrl(v){
   const u = encodeURIComponent(v.url);
   if (v.platform === "YouTube") return "https://www.youtube.com/oembed?url=" + u + "&format=json";
@@ -194,103 +235,176 @@ function enrichItem(item, keepTitle, keepPoster){
     if (!j) return; let changed = false;
     if (!keepPoster && j.thumbnail_url && item.poster !== j.thumbnail_url) { item.poster = j.thumbnail_url; changed = true; }
     if (!keepTitle && j.title && item.title === deriveTitle(item.url) && item.title !== j.title) { item.title = j.title; changed = true; }
-    if (changed) { save(); render(); }
+    if (changed) { saveMine(); render(); }
   }).catch(() => {});
 }
 
+function openOriginal(v){ window.open(v.url, "_blank", "noopener,noreferrer"); }
+let modalItem = null;
 function playHere(v){
-  const sec = document.getElementById("playerSection");
-  const w = document.getElementById("playerWrap");
-  const hint = document.getElementById("playHint");
-  sec.style.display = "block"; w.innerHTML = ""; hint.textContent = "";
+  modalItem = v;
+  const modal = document.getElementById("modal");
+  const w = document.getElementById("mWrap");
+  const hint = document.getElementById("mHint");
+  w.innerHTML = ""; hint.textContent = "";
+  document.getElementById("mTitle").textContent = v.title;
   if (v.kind === "file") {
     const el = document.createElement("video");
     el.src = v.embed || v.url; el.controls = true; el.autoplay = true; el.playsInline = true;
-    el.onerror = () => { w.innerHTML = ""; const d = document.createElement("div"); d.id = "playerEmpty"; d.textContent = "✕ This video file could not be played — its link is broken/expired or the format is not supported. Use Watch to open it on the original site."; w.appendChild(d); };
+    el.onerror = () => { w.innerHTML = ""; const d = document.createElement("div"); d.style.cssText = "color:#eee;padding:30px;text-align:center;"; d.textContent = "✕ This video file could not be played — its link is broken/expired or the format is not supported. Use “Open on the original site”."; w.appendChild(d); };
     w.appendChild(el);
+    hint.textContent = "Playing here, inside VideoVault.";
   } else {
     const el = document.createElement("iframe");
     el.src = v.embed; el.allow = "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"; el.allowFullscreen = true;
-    hint.textContent = "If this player stays black or shows an error, the source site is blocking in-site play or the video is restricted in your area — use Watch to open it on the original website instead.";
     w.appendChild(el);
+    hint.textContent = "Playing here, inside VideoVault. If it stays black or the site shows its own block message, that site is not allowing in-site play for this video — nothing is broken here; use “Open on the original site” and it plays there.";
   }
-  document.getElementById("nowTitle").textContent = v.title;
-  document.getElementById("nowMeta").textContent = v.platform + " • " + v.cat;
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  modal.classList.add("open");
 }
-document.getElementById("closePlayer").onclick = () => {
-  document.getElementById("playerSection").style.display = "none";
-  document.getElementById("playerWrap").innerHTML = "";
-};
-
-function stats(){
-  const plats = new Set(items.map(v => v.platform));
+function closeModal(){
+  document.getElementById("modal").classList.remove("open");
+  document.getElementById("mWrap").innerHTML = "";
+  modalItem = null;
+}
+document.getElementById("mClose").onclick = closeModal;
+document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.getElementById("mOpen").onclick = () => { if (modalItem) openOriginal(modalItem); };
+</script>
+<script>
+const GRADS = [["#3b2f63","#141428"],["#5a2d2d","#1a0f14"],["#1f4d3a","#0d1a14"],["#6b5410","#1c1607"],["#274b73","#0d1524"],["#5b2a68","#180d20"],["#7a3b14","#1d1108"],["#14524f","#0a1a1c"]];
+function gradFor(name){ let h = 0; for (const ch of String(name)) h = (h * 31 + ch.charCodeAt(0)) >>> 0; const g = GRADS[h % GRADS.length]; return "linear-gradient(135deg," + g[0] + "," + g[1] + ")"; }
+function allItems(){ return sharedItems.concat(mine); }
+function matches(v){
+  if (favOnly && !isFav(v)) return false;
+  if (activeCat !== "All" && v.cat !== activeCat) return false;
+  if (query && !(v.title + " " + v.platform + " " + v.cat).toLowerCase().includes(query)) return false;
+  return true;
+}
+function applySort(list){
+  const a = list.slice();
+  if (sortMode === "az") a.sort((x, y) => x.title.localeCompare(y.title));
+  else if (sortMode === "site") a.sort((x, y) => x.platform.localeCompare(y.platform) || x.title.localeCompare(y.title));
+  return a;
+}
+function buildCard(v, isShared){
+  const card = document.createElement("div"); card.className = "card";
+  const th = document.createElement("div"); th.className = "thumb";
+  if (v.poster) th.style.backgroundImage = "url(" + JSON.stringify(v.poster).slice(1, -1) + ")";
+  else {
+    const art = document.createElement("div"); art.className = "posterArt"; art.style.background = gradFor(v.platform);
+    const big = document.createElement("div"); big.className = "big"; big.textContent = (v.platform || "V").charAt(0).toUpperCase();
+    const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = v.title;
+    art.appendChild(big); art.appendChild(cap); th.appendChild(art);
+  }
+  const badge = document.createElement("div"); badge.className = "badge"; badge.textContent = v.platform; th.appendChild(badge);
+  const pill = document.createElement("div");
+  if (v.kind !== "linkout") { pill.className = "insidePill"; pill.textContent = "▶ PLAYS INSIDE"; }
+  else { pill.className = "outPill"; pill.textContent = "OPENS ON " + v.platform.toUpperCase(); }
+  th.appendChild(pill);
+  const fb = document.createElement("button"); fb.className = "favBtn" + (isFav(v) ? " fav" : ""); fb.textContent = isFav(v) ? "♥" : "♡"; fb.title = "Favourite";
+  fb.onclick = e => { e.stopPropagation(); if (favUrls.has(v.url)) favUrls.delete(v.url); else favUrls.add(v.url); saveFavs(); render(); };
+  th.appendChild(fb);
+  const ov = document.createElement("div"); ov.className = "playOverlay";
+  const pl = document.createElement("span"); pl.textContent = v.kind !== "linkout" ? "▶" : "↗"; ov.appendChild(pl); th.appendChild(ov);
+  const bd = document.createElement("div"); bd.className = "cbody";
+  const t = document.createElement("div"); t.className = "ctitle"; t.textContent = v.title;
+  const meta = document.createElement("div"); meta.className = "cmeta";
+  meta.textContent = v.platform + " • " + v.cat + (isShared ? " • 🌐 Shared" : " • ⭐ Mine");
+  bd.appendChild(t); bd.appendChild(meta);
+  if (v.note) { const n = document.createElement("div"); n.className = "cnote"; n.textContent = v.note; bd.appendChild(n); }
+  const acts = document.createElement("div"); acts.className = "cactions";
+  const main = document.createElement("button");
+  if (v.kind !== "linkout") { main.textContent = "▶ Play here"; main.onclick = e => { e.stopPropagation(); playHere(v); }; }
+  else { main.textContent = "Watch on " + v.platform + " ↗"; main.onclick = e => { e.stopPropagation(); openOriginal(v); }; }
+  acts.appendChild(main);
+  if (v.kind !== "linkout") {
+    const wb = document.createElement("button"); wb.className = "ghost"; wb.textContent = "or Watch ↗"; wb.title = "Open on the original website";
+    wb.onclick = e => { e.stopPropagation(); openOriginal(v); }; acts.appendChild(wb);
+  }
+  const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy link";
+  cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(v.url); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
+  const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
+  sh.onclick = e => { e.stopPropagation(); window.open("https://wa.me/?text=" + encodeURIComponent(v.title + " — watch: " + v.url), "_blank", "noopener"); };
+  acts.appendChild(cb); acts.appendChild(sh);
+  if (!isShared) {
+    const db = document.createElement("button"); db.className = "icon"; db.textContent = "✕"; db.title = "Remove";
+    db.onclick = e => { e.stopPropagation(); mine = mine.filter(x => x.id !== v.id); saveMine(); render(); };
+    acts.appendChild(db);
+  }
+  bd.appendChild(acts);
+  card.appendChild(th); card.appendChild(bd);
+  card.onclick = () => { if (v.kind !== "linkout") playHere(v); else openOriginal(v); };
+  return card;
+}
+function renderStats(){
+  const all = allItems();
+  const plats = new Set(all.map(v => v.platform));
+  const inside = all.filter(v => v.kind !== "linkout").length;
+  const favs = all.filter(v => isFav(v)).length;
   document.getElementById("stats").innerHTML =
-    '<div class="stat"><b>' + items.length + '</b> videos saved</div>' +
-    '<div class="stat"><b>' + plats.size + '</b> websites</div>' +
-    '<div class="stat"><b>' + items.filter(v => v.kind !== "linkout").length + '</b> play inside this site</div>' +
-    '<div class="stat"><b>' + items.filter(v => v.fav).length + '</b> favourites</div>';
+    '<div class="chip"><b>' + all.length + '</b> videos</div>' +
+    '<div class="chip"><b>' + plats.size + '</b> websites</div>' +
+    '<div class="chip"><b>' + inside + '</b> play inside</div>' +
+    '<div class="chip"><b>' + favs + '</b> favourites</div>';
 }
 function renderCats(){
-  const set = ["All", ...new Set(items.map(v => v.cat))];
+  const set = ["All", ...new Set(allItems().map(v => v.cat))];
   const c = document.getElementById("cats"); c.innerHTML = "";
   set.forEach(name => {
     const b = document.createElement("button");
     b.className = "cat" + (name === activeCat ? " on" : ""); b.textContent = name;
     b.onclick = () => { activeCat = name; render(); }; c.appendChild(b);
   });
-  const f = document.createElement("button");
-  f.className = "cat" + (activeCat === "★ Favourites" ? " on" : ""); f.textContent = "★ Favourites";
-  f.onclick = () => { activeCat = "★ Favourites"; render(); }; c.appendChild(f);
+}
+function fillGrid(elId, emptyId, list, isShared){
+  const g = document.getElementById(elId); g.innerHTML = "";
+  list.forEach(v => g.appendChild(buildCard(v, isShared)));
+  document.getElementById(emptyId).style.display = list.length ? "none" : "block";
 }
 function render(){
-  stats(); renderCats();
-  const g = document.getElementById("grid"); g.innerHTML = "";
-  const q = query.toLowerCase();
-  const list = items.filter(v =>
-    (activeCat === "All" || (activeCat === "★ Favourites" ? v.fav : v.cat === activeCat)) &&
-    (v.title + " " + v.platform + " " + v.cat).toLowerCase().includes(q));
-  document.getElementById("emptyLib").style.display = list.length ? "none" : "block";
-  list.forEach(v => {
-    const card = document.createElement("div"); card.className = "card";
-    const th = document.createElement("div"); th.className = "thumb";
-    const badge = document.createElement("div"); badge.className = "badge"; badge.textContent = v.platform;
-    th.appendChild(badge);
-    if (v.poster) { th.style.backgroundImage = "url(" + JSON.stringify(v.poster).slice(1, -1) + ")"; }
-    else { const pt = document.createElement("div"); pt.className = "posterText"; pt.textContent = v.title; th.appendChild(pt); }
-    const ov = document.createElement("div"); ov.className = "playOverlay";
-    const pl = document.createElement("span"); pl.textContent = "▶"; ov.appendChild(pl); th.appendChild(ov);
-    const bd = document.createElement("div"); bd.className = "cbody";
-    const t = document.createElement("div"); t.className = "ctitle"; t.textContent = v.title;
-    const meta = document.createElement("div"); meta.className = "cmeta";
-    meta.textContent = v.platform + " • " + v.cat + (v.kind === "linkout" ? " • opens on " + v.platform : " • ▶ plays inside this site");
-    const acts = document.createElement("div"); acts.className = "cactions";
-    if (v.kind !== "linkout") {
-      const pb = document.createElement("button"); pb.textContent = "▶ Play here"; pb.title = "Play inside this website";
-      pb.onclick = e => { e.stopPropagation(); playHere(v); };
-      acts.appendChild(pb);
-    }
-    const wb = document.createElement("button"); wb.className = "ghost"; wb.textContent = v.kind !== "linkout" ? "or Watch ↗" : "Watch ↗"; wb.title = "Open on the original website";
-    wb.onclick = e => { e.stopPropagation(); openOriginal(v); };
-    acts.appendChild(wb);
-    const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy link";
-    cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(v.url); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
-    const fb = document.createElement("button"); fb.className = "icon" + (v.fav ? " fav" : ""); fb.textContent = v.fav ? "♥" : "♡"; fb.title = "Favourite";
-    fb.onclick = e => { e.stopPropagation(); v.fav = !v.fav; save(); render(); };
-    const db = document.createElement("button"); db.className = "icon"; db.textContent = "✕"; db.title = "Remove";
-    db.onclick = e => { e.stopPropagation(); items = items.filter(x => x.id !== v.id); save(); render(); };
-    acts.appendChild(cb); acts.appendChild(fb); acts.appendChild(db);
-    bd.appendChild(t); bd.appendChild(meta); bd.appendChild(acts);
-    card.appendChild(th); card.appendChild(bd);
-    card.onclick = () => { if (v.kind !== "linkout") playHere(v); else openOriginal(v); };
-    g.appendChild(card);
-  });
+  renderStats(); renderCats();
+  fillGrid("gridShared", "emptyShared", applySort(sharedItems.filter(matches)), true);
+  fillGrid("gridMine", "emptyMine", applySort(mine.filter(matches)), false);
+  const ft = document.getElementById("favToggle");
+  ft.className = favOnly ? "" : "ghost"; ft.textContent = favOnly ? "★ Favourites" : "☆ Favourites";
 }
-document.getElementById("search").oninput = e => { query = e.target.value; render(); };
+document.getElementById("search").oninput = e => { query = e.target.value.trim().toLowerCase(); render(); };
+document.getElementById("sortSel").onchange = e => { sortMode = e.target.value; render(); };
+document.getElementById("favToggle").onclick = () => { favOnly = !favOnly; render(); };
+
+let counter = 0;
+document.getElementById("addBtn").onclick = () => {
+  const linkEl = document.getElementById("linkIn");
+  const c = classify(linkEl.value);
+  const cr = document.getElementById("checkResult");
+  if (!c) { alert("Paste a video link first."); return; }
+  if (c.error) { cr.textContent = verdictText(c); alert(c.error); return; }
+  if (allItems().some(x => x.url === c.url)) { cr.textContent = "⚠ This link is already in the library."; alert("This link is already in the library."); return; }
+  const titleEl = document.getElementById("titleIn"), posterEl = document.getElementById("posterIn");
+  const item = {
+    id: Date.now() + "_" + (counter++), fav: false,
+    title: titleEl.value.trim() || deriveTitle(c.url),
+    poster: posterEl.value.trim() || c.poster || "",
+    cat: document.getElementById("catIn").value,
+    platform: c.platform, kind: c.kind, embed: c.embed || "", url: c.url, note: c.note || ""
+  };
+  mine.unshift(item); saveMine();
+  enrichItem(item, !!titleEl.value.trim(), !!posterEl.value.trim());
+  activeCat = "All"; favOnly = false; render();
+  cr.textContent = verdictText(c);
+  linkEl.value = ""; titleEl.value = ""; posterEl.value = "";
+  document.getElementById("mineSect").scrollIntoView({ behavior: "smooth", block: "start" });
+};
+document.getElementById("linkIn").addEventListener("input", e => {
+  const c = classify(e.target.value);
+  document.getElementById("checkResult").textContent = c ? verdictText(c) : "";
+});
 document.getElementById("exportBtn").onclick = () => {
-  const blob = new Blob([JSON.stringify(items, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(mine, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = "videovault-library.json"; a.click();
+  a.href = URL.createObjectURL(blob); a.download = "videovault-my-additions.json"; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 };
 document.getElementById("importIn").addEventListener("change", e => {
@@ -301,25 +415,19 @@ document.getElementById("importIn").addEventListener("change", e => {
       const data = JSON.parse(r.result);
       if (!Array.isArray(data)) throw new Error("bad file");
       let added = 0;
-      data.forEach(v => { if (v && v.url && v.title && !items.some(x => x.url === v.url)) { v.id = Date.now() + "_" + (counter++) + added; items.unshift(v); added++; } });
-      save(); render();
-      document.getElementById("checkResult").textContent = "✓ Backup restored: " + added + " new link(s) added.";
+      data.forEach(v => { if (v && v.url && v.title && !mine.some(x => x.url === v.url)) { v.id = Date.now() + "_" + (counter++) + added; mine.unshift(v); added++; } });
+      saveMine(); render();
+      document.getElementById("checkResult").textContent = "✓ Backup restored: " + added + " new link(s) added to My Additions.";
     } catch(err) { alert("That file is not a VideoVault backup."); }
   };
   r.readAsText(f); e.target.value = "";
 });
 
-if (!items.length) {
-  items = [
-    { id:"seed2", title:"Big Buck Bunny — YouTube sample (picture + title came automatically)", poster:"https://i.ytimg.com/vi/aqz-KE-bpKQ/hqdefault.jpg", cat:"Fun",
-      platform:"YouTube", kind:"embed", embed:"https://www.youtube.com/embed/aqz-KE-bpKQ?rel=0", url:"https://www.youtube.com/watch?v=aqz-KE-bpKQ", note:"", fav:false },
-    { id:"seed3", title:"Sample video file — plays inside this website", poster:"", cat:"Fun",
-      platform:"Video file", kind:"file", embed:"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", url:"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", note:"", fav:false }
-  ];
-  save();
-}
 render();
-items.filter(v => !v.poster && oembedUrl(v)).forEach((v, i) => setTimeout(() => enrichItem(v, false, false), 500 * (i + 1)));
+mine.filter(v => !v.poster && oembedUrl(v)).forEach((v, i) => setTimeout(() => enrichItem(v, false, false), 500 * (i + 1)));
+fetch("library.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => {
+  if (Array.isArray(j) && j.length) { sharedItems = j.map(x => Object.assign({}, x, { shared: true })); render(); }
+}).catch(() => {});
 </script>
 </body>
 </html>

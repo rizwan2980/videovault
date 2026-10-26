@@ -25,6 +25,10 @@
   .post .pimgs { display:grid; gap:10px; margin-top:12px; }
   .post .pimgs img { width:100%; border-radius:12px; display:block; }
   .post.deepHi { outline:3px solid var(--gold); outline-offset:3px; }
+  .post h3.clickable { cursor:pointer; }
+  .post h3.clickable:hover { color:var(--gold); }
+  #postViewBody .post h3 { font-size:1.45rem; }
+  #postViewBody .post .ptext { font-size:1.05rem; }
   .adslot:empty { display:none; }
   .adMob { display:block; }
   .adPc { display:none; }
@@ -203,6 +207,11 @@
   <section class="sect" id="postsSect" hidden>
     <div class="sectHead"><h2>📰 Posts</h2><span>— news &amp; updates from the owner</span></div>
     <div id="postList"></div>
+  </section>
+
+  <section class="sect" id="postViewSect" hidden>
+    <button class="btn small" id="postBack">&larr; Back to the site</button>
+    <div id="postViewBody" style="margin-top:14px;"></div>
   </section>
 
   <!-- AD SLOT (bottom): Adsterra banner/native code will be pasted inside #adBottom -->
@@ -441,8 +450,11 @@ function renderCats(){
   set.forEach(name => {
     const b = document.createElement("button");
     b.className = "cat" + (name === activeCat ? " on" : ""); b.textContent = name;
-    b.onclick = () => { activeCat = name; render(); }; c.appendChild(b);
+    b.onclick = () => { setFolder(false); activeCat = name; render(); }; c.appendChild(b);
   });
+  const pb = document.createElement("button");
+  pb.className = "cat" + (window.__vvFolder ? " on" : ""); pb.textContent = "📰 Posts";
+  pb.onclick = () => setFolder(true); c.appendChild(pb);
 }
 function fillGrid(elId, emptyId, list, isShared){
   const g = document.getElementById(elId); g.innerHTML = "";
@@ -472,49 +484,76 @@ function postLink(p){ return location.href.split(/[?#]/)[0] + "?p=" + encodeURIC
 let postsDone = false;
 function applyDeepPost(){
   if (postsDone || !DEEP_POST) return;
-  const el = document.getElementById("post-" + DEEP_POST);
-  if (!el) return;
+  const p = allPosts.find(x => x.id === DEEP_POST);
+  if (!p) return;
   postsDone = true;
-  setTimeout(() => {
-    el.classList.add("deepHi");
-    const go = () => { const y = el.getBoundingClientRect().top + window.scrollY - 100; window.scrollTo({ top: Math.max(y, 0), behavior: "smooth" }); };
-    go(); setTimeout(go, 1300);
-  }, 400);
+  setTimeout(() => openPost(p), 300);
+}
+let allPosts = [];
+function buildPostEl(p, single){
+  const art = document.createElement("article"); art.className = "post"; art.id = "post-" + p.id;
+  if (p.date) { const d = document.createElement("div"); d.className = "pdate"; d.textContent = p.date; art.appendChild(d); }
+  if (p.title) { const h = document.createElement("h3"); h.textContent = p.title; if (!single) { h.className = "clickable"; h.title = "Open post"; h.onclick = () => openPost(p); } art.appendChild(h); }
+  if (p.text) { const t = document.createElement("p"); t.className = "ptext"; t.textContent = p.text; art.appendChild(t); }
+  if (Array.isArray(p.images) && p.images.length) {
+    const ig = document.createElement("div"); ig.className = "pimgs";
+    p.images.forEach(src => { const im = document.createElement("img"); im.src = src; im.loading = "lazy"; im.referrerPolicy = "no-referrer"; im.alt = p.title || "Post image"; ig.appendChild(im); });
+    art.appendChild(ig);
+  }
+  const row = document.createElement("div"); row.className = "rowBtns"; row.style.marginTop = "12px";
+  if (p.videoId) {
+    const b = document.createElement("button"); b.className = "btn small gold"; b.textContent = "▶ Watch the video";
+    b.onclick = () => {
+      const v = sharedItems.find(x => x.id === p.videoId);
+      if (v && v.kind !== "linkout") playHere(v);
+      else location.href = location.href.split(/[?#]/)[0] + "?v=" + encodeURIComponent(p.videoId);
+    };
+    row.appendChild(b);
+  }
+  if (!single) { const ob = document.createElement("button"); ob.className = "btn small"; ob.textContent = "Open post ↗"; ob.onclick = () => openPost(p); row.appendChild(ob); }
+  const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy post link";
+  cb.onclick = () => { if (navigator.clipboard) navigator.clipboard.writeText(postLink(p)); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
+  const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
+  sh.onclick = () => { window.open("https://wa.me/?text=" + encodeURIComponent((p.title || "VideoVault post") + " — " + postLink(p)), "_blank", "noopener"); };
+  row.appendChild(cb); row.appendChild(sh);
+  art.appendChild(row);
+  return art;
 }
 function renderPosts(list){
+  allPosts = list;
   const sec = document.getElementById("postsSect"), box = document.getElementById("postList");
-  if (!sec || !box || !list.length) return;
-  sec.hidden = false;
-  list.forEach(p => {
-    const art = document.createElement("article"); art.className = "post"; art.id = "post-" + p.id;
-    if (p.date) { const d = document.createElement("div"); d.className = "pdate"; d.textContent = p.date; art.appendChild(d); }
-    if (p.title) { const h = document.createElement("h3"); h.textContent = p.title; art.appendChild(h); }
-    if (p.text) { const t = document.createElement("p"); t.className = "ptext"; t.textContent = p.text; art.appendChild(t); }
-    if (Array.isArray(p.images) && p.images.length) {
-      const ig = document.createElement("div"); ig.className = "pimgs";
-      p.images.forEach(src => { const im = document.createElement("img"); im.src = src; im.loading = "lazy"; im.referrerPolicy = "no-referrer"; im.alt = p.title || "Post image"; ig.appendChild(im); });
-      art.appendChild(ig);
-    }
-    const row = document.createElement("div"); row.className = "rowBtns"; row.style.marginTop = "12px";
-    if (p.videoId) {
-      const b = document.createElement("button"); b.className = "btn small gold"; b.textContent = "▶ Watch the video";
-      b.onclick = () => {
-        const v = sharedItems.find(x => x.id === p.videoId);
-        if (v && v.kind !== "linkout") playHere(v);
-        else location.href = location.href.split(/[?#]/)[0] + "?v=" + encodeURIComponent(p.videoId);
-      };
-      row.appendChild(b);
-    }
-    const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy post link";
-    cb.onclick = () => { if (navigator.clipboard) navigator.clipboard.writeText(postLink(p)); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
-    const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
-    sh.onclick = () => { window.open("https://wa.me/?text=" + encodeURIComponent((p.title || "VideoVault post") + " — " + postLink(p)), "_blank", "noopener"); };
-    row.appendChild(cb); row.appendChild(sh);
-    art.appendChild(row);
-    box.appendChild(art);
-  });
+  if (!sec || !box) return;
+  box.innerHTML = "";
+  list.forEach(p => box.appendChild(buildPostEl(p, false)));
+  sec.hidden = !list.length && !window.__vvFolder;
   applyDeepPost();
 }
+function openPost(p){
+  const sec = document.getElementById("postViewSect"), body = document.getElementById("postViewBody");
+  if (!sec || !body) return;
+  document.getElementById("sharedSect").style.display = "none";
+  const tb = document.querySelector(".toolbar"); if (tb) tb.style.display = "none";
+  document.getElementById("postsSect").hidden = true;
+  body.innerHTML = "";
+  body.appendChild(buildPostEl(p, true));
+  sec.hidden = false;
+  try { history.pushState(null, "", postLink(p)); } catch(e) {}
+  window.scrollTo(0, 0);
+}
+function setFolder(on){
+  window.__vvFolder = on;
+  document.getElementById("sharedSect").style.display = on ? "none" : "";
+  const sec = document.getElementById("postsSect"), box = document.getElementById("postList");
+  if (on) {
+    sec.hidden = false;
+    if (!allPosts.length) box.innerHTML = '<div class="empty">No posts yet — the owner will add posts here.</div>';
+    sec.scrollIntoView({ behavior: "smooth" });
+  } else {
+    if (!allPosts.length) { box.innerHTML = ""; sec.hidden = true; } else sec.hidden = false;
+  }
+}
+const postBackBtn = document.getElementById("postBack");
+if (postBackBtn) postBackBtn.onclick = () => { location.href = location.href.split(/[?#]/)[0]; };
 fetch("posts.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => { if (Array.isArray(j)) renderPosts(j); }).catch(() => {});
 </script>
 

@@ -17,6 +17,7 @@
   .sideAdL { left:12px; }
   .sideAdR { right:12px; }
   @media (min-width:1560px) { .sideAd { display:block; } }
+  .card.deepHi { outline:3px solid var(--gold); outline-offset:3px; }
   .adslot:empty { display:none; }
   .adMob { display:block; }
   .adPc { display:none; }
@@ -288,6 +289,20 @@ function enrichItem(item, keepTitle, keepPoster){
 }
 
 function openOriginal(v){ window.open(v.url, "_blank", "noopener,noreferrer"); }
+function vvLink(v){ return location.href.split(/[?#]/)[0] + "?v=" + encodeURIComponent(v.id); }
+const DEEP_ID = (() => { try { return new URLSearchParams(location.search).get("v"); } catch(e) { return null; } })();
+let deepDone = false;
+function applyDeepLink(){
+  if (deepDone || !DEEP_ID) return;
+  const v = sharedItems.find(x => x.id === DEEP_ID);
+  if (!v) return;
+  deepDone = true;
+  if (v.kind !== "linkout") setTimeout(() => playHere(v), 350);
+  else setTimeout(() => {
+    const el = document.getElementById("card-" + v.id);
+    if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("deepHi"); }
+  }, 350);
+}
 let modalItem = null;
 function playHere(v){
   modalItem = v;
@@ -343,7 +358,7 @@ function artFor(v){
   art.appendChild(big); art.appendChild(cap); return art;
 }
 function buildCard(v, isShared){
-  const card = document.createElement("div"); card.className = "card";
+  const card = document.createElement("div"); card.className = "card"; card.id = "card-" + v.id;
   const th = document.createElement("div"); th.className = "thumb";
   const ep = effPoster(v);
   if (ep) {
@@ -376,10 +391,10 @@ function buildCard(v, isShared){
     const wb = document.createElement("button"); wb.className = "ghost"; wb.textContent = "or Watch ↗"; wb.title = "Open on the original website";
     wb.onclick = e => { e.stopPropagation(); openOriginal(v); }; acts.appendChild(wb);
   }
-  const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy link";
-  cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(v.url); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
+  const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy VideoVault link";
+  cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(vvLink(v)); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
   const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
-  sh.onclick = e => { e.stopPropagation(); window.open("https://wa.me/?text=" + encodeURIComponent(v.title + " — watch: " + v.url), "_blank", "noopener"); };
+  sh.onclick = e => { e.stopPropagation(); window.open("https://wa.me/?text=" + encodeURIComponent(v.title + " — watch on VideoVault: " + vvLink(v)), "_blank", "noopener"); };
   acts.appendChild(cb); acts.appendChild(sh);
   bd.appendChild(acts);
   card.appendChild(th); card.appendChild(bd);
@@ -424,7 +439,9 @@ document.getElementById("favToggle").onclick = () => { favOnly = !favOnly; rende
 render();
 fetch("library.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(j => {
   if (Array.isArray(j) && j.length) { sharedItems = j.map(x => Object.assign({}, x, { shared: true })); render(); }
+  applyDeepLink();
 }).catch(() => {});
+setTimeout(applyDeepLink, 900);
 </script>
 
 

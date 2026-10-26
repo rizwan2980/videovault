@@ -475,7 +475,11 @@ function applyDeepPost(){
   const el = document.getElementById("post-" + DEEP_POST);
   if (!el) return;
   postsDone = true;
-  setTimeout(() => { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.add("deepHi"); }, 400);
+  setTimeout(() => {
+    el.classList.add("deepHi");
+    const go = () => { const y = el.getBoundingClientRect().top + window.scrollY - 100; window.scrollTo({ top: Math.max(y, 0), behavior: "smooth" }); };
+    go(); setTimeout(go, 1300);
+  }, 400);
 }
 function renderPosts(list){
   const sec = document.getElementById("postsSect"), box = document.getElementById("postList");
@@ -488,7 +492,7 @@ function renderPosts(list){
     if (p.text) { const t = document.createElement("p"); t.className = "ptext"; t.textContent = p.text; art.appendChild(t); }
     if (Array.isArray(p.images) && p.images.length) {
       const ig = document.createElement("div"); ig.className = "pimgs";
-      p.images.forEach(src => { const im = document.createElement("img"); im.src = src; im.loading = "lazy"; im.referrerPolicy = "no-referrer"; im.alt = ""; ig.appendChild(im); });
+      p.images.forEach(src => { const im = document.createElement("img"); im.src = src; im.loading = "lazy"; im.referrerPolicy = "no-referrer"; im.alt = p.title || "Post image"; ig.appendChild(im); });
       art.appendChild(ig);
     }
     const row = document.createElement("div"); row.className = "rowBtns"; row.style.marginTop = "12px";

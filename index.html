@@ -86,7 +86,7 @@
       <button id="addBtn">Add to Library</button>
     </div>
     <div id="checkResult"></div>
-    <p class="note">How it works: the link becomes a card with a picture, title and site badge. Clicking a card (or its Watch button) opens the video on its own website in a new window — exactly where it always plays best. For YouTube the picture + title come automatically. For other sites the picture comes automatically only if the site shares one; otherwise the card shows a styled poster with the title, and you can paste any poster image link to make it exact. Where a site also offers an in-site player (YouTube, Vimeo, Drive, bilibili.com, direct .mp4...), the card gets an extra “Play here” button as a bonus. Watch opens the original site WITHOUT telling it where the click came from (no-referrer), because a few strict sites (e.g. Bilibili, guarded by Akamai) sometimes block visits that arrive from inside other apps — if one still shows an error page, copy its link (⧉ button) and paste it directly into Chrome.</p>
+    <p class="note">How it works: the link becomes a card with a picture, title and site badge. THE ORDER (owner's choice): if a video CAN play inside this website, clicking its card plays it HERE first. Only when a site offers no in-site player does clicking open the video on its own website instead — and the card says so before you click. For YouTube the picture + title come automatically. For other sites the picture comes automatically only if the site shares one; otherwise the card shows a styled poster with the title, and you can paste any poster image link to make it exact. Sites with an in-site player (YouTube, Vimeo, Drive, bilibili.com, direct .mp4...) carry the big gold ▶ Play here button. Watch opens the original site WITHOUT telling it where the click came from (no-referrer), because a few strict sites (e.g. Bilibili, guarded by Akamai) sometimes block visits that arrive from inside other apps — if one still shows an error page, copy its link (⧉ button) and paste it directly into Chrome.</p>
     <div class="row" style="margin-top:10px;">
       <button class="ghost" id="exportBtn">⬇ Backup library (JSON)</button>
       <label class="ghost" style="padding:11px 18px; border-radius:10px; border:1px solid #3a3a58; background:#23233a; color:#eee; font-weight:600; cursor:pointer; font-size:15px;">⬆ Restore backup <input id="importIn" type="file" accept=".json,application/json" style="display:none;"></label>
@@ -143,8 +143,8 @@ function verdictText(c){
   if (!c) return "";
   if (c.error) return "✕ " + c.error;
   if (c.kind === "linkout") return "→ " + c.platform + ": link card added. Clicking it opens the video on " + c.platform + " in a new window. " + (c.note || "");
-  if (c.kind === "file") return "✓ " + c.platform + ": card added — Watch opens the file, and Play here plays it inside this website too.";
-  return "✓ " + c.platform + ": card added — Watch opens it on " + c.platform + ", and Play here plays it inside this website too." + (c.poster ? " Picture found automatically." : " Add a poster image link if you want a custom picture.");
+  if (c.kind === "file") return "✓ " + c.platform + ": card added — click the card or ▶ Play here and it plays INSIDE this website. (Watch ↗ opens the file directly instead.)";
+  return "✓ " + c.platform + ": card added — click the card or ▶ Play here and it plays INSIDE this website. (Watch ↗ opens it on " + c.platform + " instead.)" + (c.poster ? " Picture found automatically." : " Add a poster image link if you want a custom picture.");
 }
 
 let counter = 0;
@@ -206,7 +206,7 @@ function stats(){
   document.getElementById("stats").innerHTML =
     '<div class="stat"><b>' + items.length + '</b> videos saved</div>' +
     '<div class="stat"><b>' + plats.size + '</b> websites</div>' +
-    '<div class="stat"><b>' + items.filter(v => v.kind !== "linkout").length + '</b> can also play here</div>' +
+    '<div class="stat"><b>' + items.filter(v => v.kind !== "linkout").length + '</b> play inside this site</div>' +
     '<div class="stat"><b>' + items.filter(v => v.fav).length + '</b> favourites</div>';
 }
 function renderCats(){
@@ -241,16 +241,16 @@ function render(){
     const bd = document.createElement("div"); bd.className = "cbody";
     const t = document.createElement("div"); t.className = "ctitle"; t.textContent = v.title;
     const meta = document.createElement("div"); meta.className = "cmeta";
-    meta.textContent = v.platform + " • " + v.cat + (v.kind === "linkout" ? " • opens on " + v.platform : " • can play here too");
+    meta.textContent = v.platform + " • " + v.cat + (v.kind === "linkout" ? " • opens on " + v.platform : " • ▶ plays inside this site");
     const acts = document.createElement("div"); acts.className = "cactions";
-    const wb = document.createElement("button"); wb.textContent = "Watch ↗"; wb.title = "Open on the original website";
-    wb.onclick = e => { e.stopPropagation(); openOriginal(v); };
-    acts.appendChild(wb);
     if (v.kind !== "linkout") {
-      const pb = document.createElement("button"); pb.className = "ghost"; pb.textContent = "▶ Play here";
+      const pb = document.createElement("button"); pb.textContent = "▶ Play here"; pb.title = "Play inside this website";
       pb.onclick = e => { e.stopPropagation(); playHere(v); };
       acts.appendChild(pb);
     }
+    const wb = document.createElement("button"); wb.className = "ghost"; wb.textContent = v.kind !== "linkout" ? "or Watch ↗" : "Watch ↗"; wb.title = "Open on the original website";
+    wb.onclick = e => { e.stopPropagation(); openOriginal(v); };
+    acts.appendChild(wb);
     const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy link";
     cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(v.url); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
     const fb = document.createElement("button"); fb.className = "icon" + (v.fav ? " fav" : ""); fb.textContent = v.fav ? "♥" : "♡"; fb.title = "Favourite";
@@ -260,7 +260,7 @@ function render(){
     acts.appendChild(cb); acts.appendChild(fb); acts.appendChild(db);
     bd.appendChild(t); bd.appendChild(meta); bd.appendChild(acts);
     card.appendChild(th); card.appendChild(bd);
-    card.onclick = () => openOriginal(v);
+    card.onclick = () => { if (v.kind !== "linkout") playHere(v); else openOriginal(v); };
     g.appendChild(card);
   });
 }

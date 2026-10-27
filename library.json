@@ -4,11 +4,11 @@
   "title": "HOPE (2026) — Korean Movie | Hindi Dubbed (Full Movie)",
   "poster": "https://i0.hdslb.com/bfs/archive/32902e1e9094a123b41210969c4d6a97067b0501.jpg",
   "cat": "Movies",
-  "platform": "Bilibili TV",
-  "kind": "linkout",
-  "embed": "",
-  "url": "https://www.bilibili.tv/en/video/4801384054266880",
-  "note": "The full movie with Hindi dubbing — the button opens it on Bilibili, where it plays."
+  "platform": "YouTube",
+  "kind": "embed",
+  "embed": "https://www.youtube.com/embed/oQFCjssPAbo?rel=0",
+  "url": "https://www.youtube.com/watch?v=oQFCjssPAbo",
+  "note": "Full movie in Hindi. A mysterious creature throws a quiet harbor town into chaos — plays right here."
  },
  {
   "id": "s19",

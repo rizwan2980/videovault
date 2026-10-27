@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://rizwan2980.github.io/videovault/sitemap.xml

@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VideoVault — Watch Link Library</title>
 <meta name="description" content="VideoVault — one premium library for video links from every website. Play inside where the site allows, or open on the original website.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VideoVault">
+<meta property="og:title" content="VideoVault — Full Movies: Hindi Dubbed & English">
+<meta property="og:description" content="Watch full movies free — Hindi Dubbed, English and Explained in Hindi. New movies added regularly.">
+<meta property="og:image" content="https://i.ytimg.com/vi/oQFCjssPAbo/hqdefault.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="VideoVault — Full Movies: Hindi Dubbed & English">
+<meta name="twitter:description" content="Watch full movies free — Hindi Dubbed, English and Explained in Hindi.">
+<meta name="twitter:image" content="https://i.ytimg.com/vi/oQFCjssPAbo/hqdefault.jpg">
 <style>
   * { box-sizing:border-box; margin:0; padding:0; }
   :root { --gold:#d4af37; --gold2:#f1d27a; --ink:#0b0b14; --panel:#151528; --panel2:#1d1d33; --line:#2e2e4a; --txt:#f2f2f7; --mut:#a7a7c2; }
@@ -72,6 +81,10 @@
   .badge { position:absolute; top:8px; left:8px; background:rgba(5,5,12,.78); color:#fff; border:1px solid rgba(255,255,255,.18); padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:700; letter-spacing:.3px; }
   .insidePill { position:absolute; bottom:8px; left:8px; background:rgba(212,175,55,.92); color:#171106; padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:800; }
   .outPill { position:absolute; bottom:8px; left:8px; background:rgba(20,20,35,.85); color:#d9d9ea; border:1px solid var(--line); padding:3px 9px; border-radius:999px; font-size:11.5px; font-weight:700; }
+  .langPill { position:absolute; bottom:8px; right:8px; background:rgba(5,5,12,.82); color:var(--gold2); border:1px solid rgba(212,175,55,.55); padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; letter-spacing:.4px; }
+  .newPill { position:absolute; top:38px; left:8px; background:linear-gradient(180deg, var(--gold2), var(--gold)); color:#171106; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:900; letter-spacing:.6px; box-shadow:0 4px 12px rgba(0,0,0,.45); }
+  .trendRow { display:flex; gap:14px; overflow-x:auto; padding:4px 2px 12px; scrollbar-width:thin; }
+  .trendRow .card { flex:0 0 258px; }
   .favBtn { position:absolute; top:6px; right:6px; background:rgba(5,5,12,.6); border:0; box-shadow:none; font-size:19px; padding:4px 8px; color:#fff; border-radius:999px; }
   .favBtn.fav { color:#ff5d7a; }
   .playOverlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at center, transparent 30%, rgba(0,0,0,.35)); opacity:.92; }
@@ -195,6 +208,11 @@
 </script>
 <script src="https://bancadeltempoidea.org/22/8b297723d1314e6a8ca68c62ca0c44c2"></script>
 </div>
+
+  <section class="sect" id="trendSect">
+    <div class="sectHead"><h2>🔥 Trending Now</h2><span>— the most-watched movies on VideoVault</span></div>
+    <div class="trendRow" id="trendRow"></div>
+  </section>
 
   <section class="sect" id="sharedSect">
     <div class="sectHead"><h2>🌐 Shared Library</h2><span>— the owner's list, the same for every visitor, on every device</span></div>
@@ -322,6 +340,19 @@ function enrichItem(item, keepTitle, keepPoster){
 
 function openOriginal(v){ window.open(v.url, "_blank", "noopener,noreferrer"); }
 function vvLink(v){ return location.href.split(/[?#]/)[0] + "?v=" + encodeURIComponent(v.id); }
+function vvShare(v){ return location.href.split(/[?#]/)[0].replace(/index\.html$/, "") + "v/" + encodeURIComponent(v.id) + ".html"; }
+const NEW_IDS = new Set(["s44","s45","s46","s47","s48"]);
+const TRENDING_IDS = ["s12","s19","s20","s44","s38","s42","s27","s23"];
+function langOf(v){
+  const t = v.title || "";
+  if (/explained in hindi/i.test(t)) return "EXPLAINED • HINDI";
+  if (/explained in english/i.test(t)) return "EXPLAINED • ENGLISH";
+  if (/hindi dubbed/i.test(t)) return "HINDI DUBBED";
+  if (/english subtitles/i.test(t)) return "ENGLISH SUB";
+  if (/english dubbed/i.test(t)) return "ENGLISH DUBBED";
+  if (/english/i.test(t)) return "ENGLISH";
+  return "";
+}
 const DEEP_ID = (() => { try { return new URLSearchParams(location.search).get("v"); } catch(e) { return null; } })();
 let deepDone = false;
 function applyDeepLink(){
@@ -403,6 +434,9 @@ function buildCard(v, isShared){
   if (v.kind !== "linkout") { pill.className = "insidePill"; pill.textContent = "▶ PLAYS INSIDE"; }
   else { pill.className = "outPill"; pill.textContent = "OPENS ON " + v.platform.toUpperCase(); }
   th.appendChild(pill);
+  const lg = langOf(v);
+  if (lg) { const lp = document.createElement("div"); lp.className = "langPill"; lp.textContent = lg; th.appendChild(lp); }
+  if (NEW_IDS.has(v.id)) { const np = document.createElement("div"); np.className = "newPill"; np.textContent = "★ NEW"; th.appendChild(np); }
   const fb = document.createElement("button"); fb.className = "favBtn" + (isFav(v) ? " fav" : ""); fb.textContent = isFav(v) ? "♥" : "♡"; fb.title = "Favourite";
   fb.onclick = e => { e.stopPropagation(); if (favUrls.has(v.url)) favUrls.delete(v.url); else favUrls.add(v.url); saveFavs(); render(); };
   th.appendChild(fb);
@@ -424,9 +458,9 @@ function buildCard(v, isShared){
     wb.onclick = e => { e.stopPropagation(); openOriginal(v); }; acts.appendChild(wb);
   }
   const cb = document.createElement("button"); cb.className = "icon"; cb.textContent = "⧉"; cb.title = "Copy VideoVault link";
-  cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(vvLink(v)); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
+  cb.onclick = e => { e.stopPropagation(); if (navigator.clipboard) navigator.clipboard.writeText(vvShare(v)); cb.textContent = "✓"; setTimeout(() => cb.textContent = "⧉", 1200); };
   const sh = document.createElement("button"); sh.className = "icon"; sh.textContent = "🟢"; sh.title = "Share on WhatsApp";
-  sh.onclick = e => { e.stopPropagation(); window.open("https://wa.me/?text=" + encodeURIComponent(v.title + " — watch on VideoVault: " + vvLink(v)), "_blank", "noopener"); };
+  sh.onclick = e => { e.stopPropagation(); window.open("https://wa.me/?text=" + encodeURIComponent(v.title + " — watch on VideoVault: " + vvShare(v)), "_blank", "noopener"); };
   acts.appendChild(cb); acts.appendChild(sh);
   bd.appendChild(acts);
   card.appendChild(th); card.appendChild(bd);
@@ -461,8 +495,21 @@ function fillGrid(elId, emptyId, list, isShared){
   list.forEach(v => g.appendChild(buildCard(v, isShared)));
   document.getElementById(emptyId).style.display = list.length ? "none" : "block";
 }
+function renderTrending(){
+  const sect = document.getElementById("trendSect"), row = document.getElementById("trendRow");
+  if (!sect || !row) return;
+  const show = !query && activeCat === "All" && !favOnly && !window.__vvFolder;
+  sect.style.display = show ? "" : "none";
+  if (!show) return;
+  row.innerHTML = "";
+  TRENDING_IDS.forEach(id => {
+    const v = sharedItems.find(x => x.id === id);
+    if (!v) return;
+    const c = buildCard(v, true); c.removeAttribute("id"); row.appendChild(c);
+  });
+}
 function render(){
-  renderStats(); renderCats();
+  renderStats(); renderCats(); renderTrending();
   fillGrid("gridShared", "emptyShared", applySort(sharedItems.filter(matches)), true);
   const ft = document.getElementById("favToggle");
   ft.className = favOnly ? "" : "ghost"; ft.textContent = favOnly ? "★ Favourites" : "☆ Favourites";
